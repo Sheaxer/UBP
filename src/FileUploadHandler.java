@@ -68,7 +68,7 @@ public class FileUploadHandler extends HttpServlet {
 				salt = CryptoUtils.encrypt(key, temp, encrypted);
 				File saltFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + "-salt.txt");
 				FileOutputStream saltOutput = new FileOutputStream(saltFile);
-				saltOutput.write(salt.toString().getBytes());
+				saltOutput.write(salt);
 				saltOutput.close();
 				
 			} catch (Exception e) {
@@ -76,9 +76,48 @@ public class FileUploadHandler extends HttpServlet {
 				e.printStackTrace();
 			}
 			
+			temp.delete();
+			
 		}
 		else
-			System.out.println("NO");
+		{
+			String fileName = request.getParameter("fileName");
+			File file = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc");
+			String key = request.getParameter("key");
+			if(file.exists() && !file.isDirectory())
+			{
+				response.setContentType("text/plain");
+		        response.setHeader("Content-disposition", "attachment; filename=" + fileName);
+		        File decrypted= new File(UPLOAD_DIRECTORY + File.separator + fileName);
+		        File saltedFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + "-salt.txt");
+		        FileInputStream saltInput = new FileInputStream(saltedFile);
+		        byte[] salt = new byte[CryptoUtils.SALTSIZE];
+		        saltInput.read(salt);
+		        saltInput.close();
+		        try {
+					CryptoUtils.decrypt(key, file, decrypted, salt);
+					decrypted =  new File(UPLOAD_DIRECTORY + File.separator + fileName);
+					System.out.println("Writing repsonse");
+					FileInputStream in = new FileInputStream(decrypted);
+					byte[] buffer = new byte[4096];
+					OutputStream out = response.getOutputStream();
+					
+					response.setContentLength((int) decrypted.length());
+					int bytesRead = -1;
+			         
+			        while ((bytesRead = in.read(buffer)) != -1) {
+			            out.write(buffer, 0, bytesRead);
+			        }
+					in.close();
+					decrypted.delete();
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        
+			}
+		}
 		
 		
 		/*if(ServletFileUpload.isMultipartContent(request)){
