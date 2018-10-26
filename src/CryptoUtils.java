@@ -23,7 +23,7 @@ public class CryptoUtils {
 	
 	private static final String ALGORITHM = "AES" ;
 	private static final String TRANSFORMATION = "AES";
-	
+	protected static final int SALTSIZE = 16;
 	/*public static byte[] encrypt(String key, File inputFile, File outputFile)
 	throws Exception
 	{
@@ -92,7 +92,7 @@ public class CryptoUtils {
 	private static byte[] getSalt() throws NoSuchAlgorithmException {
 		SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
 		//sr.setSeed(System.currentTimeMillis());
-        byte[] salt = new byte[16];
+        byte[] salt = new byte[SALTSIZE];
         sr.nextBytes(salt);
         return salt;
 	}
