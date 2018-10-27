@@ -2,12 +2,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -20,10 +21,12 @@ import javax.crypto.SecretKeyFactory;
 
 public class CryptoUtils {
 
-	
 	private static final String ALGORITHM = "AES" ;
 	private static final String TRANSFORMATION = "PBKDF2WithHmacSHA1";
 	protected static final int SALTSIZE = 16;
+
+	private static final String ASYMETRIC_ALGORITHM = "RSA";
+
 	/*public static byte[] encrypt(String key, File inputFile, File outputFile)
 	throws Exception
 	{
@@ -64,7 +67,7 @@ public class CryptoUtils {
 			
 			if(salt == null)
 				salt=getSalt();
-			SecretKey secretKey= generateKey(key,salt);
+			SecretKey secretKey = generateKey(key,salt);
 			//Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
 			cipher.init(mode, secretKey);
@@ -95,5 +98,22 @@ public class CryptoUtils {
         byte[] salt = new byte[SALTSIZE];
         sr.nextBytes(salt);
         return salt;
+	}
+
+	// ziskanie public/ private klucov podla https://stackoverflow.com/questions/11410770/load-rsa-public-key-from-file
+	public static PrivateKey getPrivateKeyFromDER(String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+		byte[] keyBytes = Files.readAllBytes(Paths.get(filename));
+
+		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+		KeyFactory kf = KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
+		return kf.generatePrivate(spec);
+	}
+
+	public static PublicKey getPublicKeyFromDER(String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+		byte[] keyBytes = Files.readAllBytes(Paths.get(filename));
+
+		X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+		KeyFactory kf = KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
+		return kf.generatePublic(spec);
 	}
 }
