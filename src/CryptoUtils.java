@@ -22,7 +22,7 @@ public class CryptoUtils {
 
 	
 	private static final String ALGORITHM = "AES" ;
-	private static final String TRANSFORMATION = "AES";
+	private static final String TRANSFORMATION = "PBKDF2WithHmacSHA1";
 	protected static final int SALTSIZE = 16;
 	/*public static byte[] encrypt(String key, File inputFile, File outputFile)
 	throws Exception
@@ -51,7 +51,7 @@ public class CryptoUtils {
 	
 	private static SecretKey generateKey(String password,byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException
 	{
-		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+		SecretKeyFactory factory = SecretKeyFactory.getInstance(TRANSFORMATION);
 		KeySpec spec = new PBEKeySpec(password.toCharArray(),salt,65536,256);
 		SecretKey tmp = factory.generateSecret(spec);
 		SecretKey secretKey = new SecretKeySpec(tmp.getEncoded(), ALGORITHM);
@@ -66,7 +66,7 @@ public class CryptoUtils {
 				salt=getSalt();
 			SecretKey secretKey= generateKey(key,salt);
 			//Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
-			Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+			Cipher cipher = Cipher.getInstance(ALGORITHM);
 			cipher.init(mode, secretKey);
 			FileInputStream in = new FileInputStream(inputFile);
 			byte[] inputBytes = new byte[(int) inputFile.length()];
