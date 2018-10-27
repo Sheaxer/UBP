@@ -2,11 +2,13 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -79,10 +81,50 @@ public class CryptoUtils {
 			doCrypto(Cipher.ENCRYPT_MODE, new String(randomKey), inputFile, outputFile, salt, true);
 		}
 		catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException ex) {
-			throw new Exception ("Error encrypting/decrypting file " + ex.getMessage());
+			throw new Exception ("Error encrypting/decrypting file " + ex.getMessage(), ex);
 		}
 		catch (Exception innerEx) {
-			throw new Exception ("Inner exception: " + innerEx.getMessage());
+			throw new Exception ("Inner exception: " + innerEx.getMessage(), innerEx);
+		}
+	}
+
+	public static void decryptAsymetric(PrivateKey privateKey, File inputFile, File outputFile) throws Exception {
+		try {
+			// musime nacitat prvy RSA blok, aby sme mohli odsifrovat zvysok suboru
+			FileInputStream in = new FileInputStream(inputFile);
+			byte[] fileBytes = new byte[(int) inputFile.length()];
+			in.read(fileBytes);
+
+			// velkost bloku je rovnaka ako velkost kluca (pozor bity, byty!)
+			assert (privateKey instanceof RSAPrivateKey) && ASYMETRIC_ALGORITHM.equals("RSA");
+
+			int rsaBlockSize = ((RSAPrivateKey) privateKey).getModulus().bitLength()/8;
+			byte[] rsaBlock = new byte[rsaBlockSize];
+			System.arraycopy(fileBytes,0, rsaBlock, 0, rsaBlockSize);
+
+			// desifrujeme RSA blok pomocou sukromneho kluca
+			Cipher asymetricCipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);
+			asymetricCipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+			byte[] keyAndSalt = asymetricCipher.doFinal(rsaBlock);
+			assert keyAndSalt.length == 2*SALTSIZE;
+
+			// extrahujeme kluc a salt
+			byte[] key = new byte[SALTSIZE];
+			byte[] salt = new byte[SALTSIZE];
+			System.arraycopy(keyAndSalt, 0, key, 0, SALTSIZE);
+			System.arraycopy(keyAndSalt, SALTSIZE, salt, 0, SALTSIZE);
+
+			// desifrujeme zvysok suboru pomocou AES a ziskaneho kluca + saltu
+			byte[] aesBytes = Arrays.copyOfRange(fileBytes, rsaBlockSize, fileBytes.length);
+
+			doCrypto(Cipher.DECRYPT_MODE, new String(key), aesBytes, outputFile, salt, false);
+
+		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+			throw new Exception ("Error encrypting/decrypting file " + e.getMessage(), e);
+		}
+		catch (Exception innerEx) {
+			throw new Exception ("Inner exception: " + innerEx.getMessage(), innerEx);
 		}
 	}
 	
@@ -101,37 +143,46 @@ public class CryptoUtils {
 		return secretKey;
 	}
 
+	// pretazene funkcie pre kompatibilitu s existujucim kodom
 	public static byte[] doCrypto(int mode,String key, File inputFile, File outputFile, byte[] salt) throws Exception {
-		// pretazena funkcie pre kompatibilitu s existujucim kodom
 		return doCrypto(mode, key, inputFile, outputFile, salt, false);
 	}
 
-	public  static byte[] doCrypto(int mode,String key, File inputFile, File outputFile, byte[] salt, boolean appendOutput) throws Exception {
+	public static byte[] doCrypto(int mode,String key, File inputFile, File outputFile, byte[] salt, boolean appendOutput) throws Exception {
 		try {
-			
+			FileInputStream in = new FileInputStream(inputFile);
+			byte[] inputBytes = new byte[(int) inputFile.length()];
+			in.read(inputBytes);
+
+			in.close();
+
+			return doCrypto(mode, key, inputBytes, outputFile, salt, appendOutput);
+		}
+		catch(IOException e) {
+			throw new Exception ("Error processing input file " + e.getMessage(), e);
+		}
+	}
+
+	public static byte[] doCrypto(int mode,String key, byte[] inputFileBytes, File outputFile, byte[] salt, boolean appendOutput) throws Exception {
+		try {
 			if(salt == null)
 				salt=getSalt();
 			SecretKey secretKey = generateKey(key,salt);
 			//Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
 			cipher.init(mode, secretKey);
-			FileInputStream in = new FileInputStream(inputFile);
-			byte[] inputBytes = new byte[(int) inputFile.length()];
-			in.read(inputBytes);
-			
-			byte[] outputBytes = cipher.doFinal(inputBytes);
-			
+
+			byte[] outputBytes = cipher.doFinal(inputFileBytes);
+
 			FileOutputStream out = new FileOutputStream(outputFile, appendOutput);
 			out.write(outputBytes);
-			
-			
-			in.close();
+
 			out.close();
 			return salt;
-			
+
 		} catch(NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException ex)
 		{
-			throw new Exception ("Error encrypting/decrypting file "+ex.getMessage());
+			throw new Exception ("Error encrypting/decrypting file " + ex.getMessage(), ex);
 		}
 	}
 	
