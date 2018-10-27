@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
@@ -134,7 +135,31 @@ public class App extends JFrame implements ActionListener {
 			}
             else {
                 // Decryption
+				File inputFile = new File(this.inFileSelector.getFilePath());
+				if( !inputFile.exists()) {
+					// neexistuje vstupny subor
+					// TODO
+					System.err.println("Neexistuje vstupny subor");
+				}
 
+				File outputFile = new File(this.outFileSelector.getFilePath());
+
+				// ziskam si kluc z der suboru
+				try {
+					PrivateKey key = CryptoUtils.getPrivateKeyFromDER(this.privateKeyFileSelector.getFilePath());
+
+					// desifrujem vstupny subor
+					try {
+						CryptoUtils.decryptAsymetric(key, inputFile, outputFile);
+					} catch (Exception eInner) {
+						// TODO
+						eInner.printStackTrace();
+					}
+
+				} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException eOuter) {
+					// TODO
+					eOuter.printStackTrace();
+				}
             }
         }
     }
