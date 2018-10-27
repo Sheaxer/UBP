@@ -1,6 +1,12 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 
 public class App extends JFrame implements ActionListener {
 
@@ -100,8 +106,32 @@ public class App extends JFrame implements ActionListener {
             // do encryption/decryption
             if(this.modeEnc.isSelected()) {
                 // Encryption
+                File inputFile = new File(this.inFileSelector.getFilePath());
+				if( !inputFile.exists()) {
+					// neexistuje vstupny subor
+					// TODO
+					System.err.println("Neexistuje vstupny subor");
+				}
 
-            }
+				File outputFile = new File(this.outFileSelector.getFilePath());
+
+				// ziskam si kluc z der suboru
+				try {
+					PublicKey key = CryptoUtils.getPublicKeyFromDER(this.publicKeyFileSelector.getFilePath());
+
+					// zasifrujem vstupny subor
+					try {
+						CryptoUtils.encryptAsymetric(key, inputFile, outputFile);
+					} catch (Exception eInner) {
+						// TODO
+						eInner.printStackTrace();
+					}
+
+				} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException eOuter) {
+					// TODO
+					eOuter.printStackTrace();
+				}
+			}
             else {
                 // Decryption
 

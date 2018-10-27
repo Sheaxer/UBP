@@ -27,6 +27,10 @@ public class FileSelector extends JPanel implements ActionListener {
         this.selectBtn.addActionListener(this);
     }
 
+    public String getFilePath() {
+        return this.fileTF.getText();
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
