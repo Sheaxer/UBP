@@ -25,5 +25,5 @@ Decryption key:  <input type="file" name="key" /> <br>
 <input type="hidden" name="cipher" value="asymetric">
 <input type="submit" value="download" />
 </form>
-
+<a href="./index.jsp"> encrypt files</a>
 </body>
