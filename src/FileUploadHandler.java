@@ -39,23 +39,11 @@ public class FileUploadHandler extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 		System.out.println(UPLOAD_DIRECTORY);
-		/*for(Part p: request.getParts())
-		{
-			System.out.println(p.getName());
-		}*/
-		//System.out.println(request.getContentType().toString());
+
 		System.out.println("REQUEST IS ="+request.getContentType().toString());
 		
 		if(ServletFileUpload.isMultipartContent(request))
 		{
-			//System.out.println("YES");
-			
-			/*for(Part p : request.getParts())
-			{
-				System.out.println(p.getName());
-				
-			}*/
-			//
 			String mode = request.getParameter("mode");
 			Part filePart = request.getPart("fileName");
 			String fileName = Paths.get(getFileName(filePart)).getFileName().toString();
@@ -78,11 +66,7 @@ public class FileUploadHandler extends HttpServlet {
 							try {
 								secretKey = CryptoUtils.encrypt(temp, encrypted,false);
 								File secretKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key");
-								/*FileOutputStream secretKeyFileOutput = new FileOutputStream(secretKeyFile);
-								ObjectOutputStream secretKeyOutput = new ObjectOutputStream(secretKeyFileOutput);
-								secretKeyOutput.writeObject(secretKey);
-								secretKeyOutput.close();
-								secretKeyFileOutput.close();*/
+							
 								CryptoUtils.writeKeytoFile(secretKey, secretKeyFile);
 								String[] fileNames = {fileName + ".enc",fileName + ".key"};
 								byte[] zip = zipFiles(fileNames);
@@ -97,8 +81,7 @@ public class FileUploadHandler extends HttpServlet {
 						//temp.delete();
 						//encrypted.delete();
 								new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key").delete();
-						//secretKeyFile.delete();
-						//secretKey.destroy();
+						
 								sos.close();
 							}
 							catch (Exception e) {
@@ -152,11 +135,7 @@ public class FileUploadHandler extends HttpServlet {
 							String secretKeyFileName = Paths.get(getFileName(KeyPart)).getFileName().toString();
 							KeyPart.write(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName );
 							secretKey = CryptoUtils.readSymetricKeyFromFile(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName));
-						/*FileInputStream secretKeyFileInput = new FileInputStream(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName)); 
-						ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
-						secretKey = (SecretKey)secretKeyObjectInput.readObject();
-						secretKeyObjectInput.close();
-						secretKeyFileInput.close();*/
+
 							new File(UPLOAD_DIRECTORY + secretKeyFileName).delete();
 							String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
 							File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
@@ -189,11 +168,7 @@ public class FileUploadHandler extends HttpServlet {
 							String privateKeyFileName = Paths.get(getFileName(KeyPart)).getFileName().toString();
 							KeyPart.write(UPLOAD_DIRECTORY + File.separator+ privateKeyFileName );
 							PrivateKey privateKey = CryptoUtils.readPrivateKeyFile(new File(UPLOAD_DIRECTORY + File.separator + privateKeyFileName));
-					/*FileInputStream secretKeyFileInput = new FileInputStream(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName)); 
-					ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
-					secretKey = (SecretKey)secretKeyObjectInput.readObject();
-					secretKeyObjectInput.close();
-					secretKeyFileInput.close();*/
+
 							new File(UPLOAD_DIRECTORY + privateKeyFileName).delete();
 							String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
 							File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
