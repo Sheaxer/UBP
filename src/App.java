@@ -118,7 +118,7 @@ public class App extends JFrame implements ActionListener {
 
 				// ziskam si kluc z der suboru
 				try {
-					PublicKey key = CryptoUtils.getPublicKeyFromDER(this.publicKeyFileSelector.getFilePath());
+					PublicKey key = CryptoUtils.readPublicKey(this.publicKeyFileSelector.getFilePath());
 
 					// zasifrujem vstupny subor
 					try {
@@ -146,7 +146,7 @@ public class App extends JFrame implements ActionListener {
 
 				// ziskam si kluc z der suboru
 				try {
-					PrivateKey key = CryptoUtils.getPrivateKeyFromDER(this.privateKeyFileSelector.getFilePath());
+					PrivateKey key = CryptoUtils.readPrivateKey(this.privateKeyFileSelector.getFilePath());
 
 					// desifrujem vstupny subor
 					try {
