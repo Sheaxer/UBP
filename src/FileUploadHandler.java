@@ -2,11 +2,10 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -66,84 +65,164 @@ public class FileUploadHandler extends HttpServlet {
 			filePart.write(UPLOAD_DIRECTORY + File.separator + fileName);
 			File temp = new File(UPLOAD_DIRECTORY + File.separator + fileName);
 			SecretKey secretKey;
+			String cipher = request.getParameter("cipher");
 			//
 			switch(mode) {
 				case "encrypt":
 					//filePart.write(UPLOAD_DIRECTORY + File.separator + fileName);
 					
 					File encrypted = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc");
-					
-					try {
-						secretKey = CryptoUtils.encrypt(temp, encrypted,false);
-						File secretKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key");
-						FileOutputStream secretKeyFileOutput = new FileOutputStream(secretKeyFile);
-						ObjectOutputStream secretKeyOutput = new ObjectOutputStream(secretKeyFileOutput);
-						secretKeyOutput.writeObject(secretKey);
-						secretKeyOutput.close();
-						secretKeyFileOutput.close();
-				        String[] fileNames = {fileName + ".enc",fileName + ".key"};
-				        byte[] zip = zipFiles(fileNames);
-				        ServletOutputStream sos = response.getOutputStream();
-		                response.setContentType("application/zip");
-		                response.setHeader("Content-Disposition", "attachment; filename=" + fileName + "-enc.zip");
-		                response.setContentLength(zip.length);
-		                sos.write(zip);
-		                sos.flush();
+					switch(cipher)
+					{
+						case "symetric":
+							try {
+								secretKey = CryptoUtils.encrypt(temp, encrypted,false);
+								File secretKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key");
+								/*FileOutputStream secretKeyFileOutput = new FileOutputStream(secretKeyFile);
+								ObjectOutputStream secretKeyOutput = new ObjectOutputStream(secretKeyFileOutput);
+								secretKeyOutput.writeObject(secretKey);
+								secretKeyOutput.close();
+								secretKeyFileOutput.close();*/
+								CryptoUtils.writeKeytoFile(secretKey, secretKeyFile);
+								String[] fileNames = {fileName + ".enc",fileName + ".key"};
+								byte[] zip = zipFiles(fileNames);
+								ServletOutputStream sos = response.getOutputStream();
+								response.setContentType("application/zip");
+								response.setHeader("Content-Disposition", "attachment; filename=" + fileName + "-enc.zip");
+								response.setContentLength(zip.length);
+								sos.write(zip);
+								sos.flush();
 		                //temp = new File(UPLOAD_DIRECTORY + File.separator + fileName);
-						new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc").delete();
+								new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc").delete();
 						//temp.delete();
 						//encrypted.delete();
-						new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key").delete();
+								new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key").delete();
 						//secretKeyFile.delete();
 						//secretKey.destroy();
-						sos.close();
+								sos.close();
+							}
+							catch (Exception e) {
+								// TODO Auto-generated catch block
+											e.printStackTrace();
 				        
-				        
-					} catch (Exception e) {
-				// TODO Auto-generated catch block
-						e.printStackTrace();
+							} 
+							break;
+						case "asymetric":
+							
+						try {
+							KeyPair keyPair= CryptoUtils.encryptAsymetric(temp, encrypted);
+							File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey");
+							File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey");
+							CryptoUtils.writeKeyPairToFile(keyPair, publicKeyFile ,privateKeyFile);
+							privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey");
+							publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey");
+							
+							String[] fileNames = {fileName + ".enc",fileName + ".prkey"};
+							byte[] zip = zipFiles(fileNames);
+							ServletOutputStream sos = response.getOutputStream();
+							response.setContentType("application/zip");
+							response.setHeader("Content-Disposition", "attachment; filename=" + fileName + "-enc.zip");
+							response.setContentLength(zip.length);
+							sos.write(zip);
+							sos.flush();
+							sos.close();
+							new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc").delete();
+							new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey").delete();
+							new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey").delete();
+							
+							
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+							
+							
+							
+							
 					}
 					//temp.delete();
 					break;
 				case "decrypt":
-					try {
-						Part secretKeyPart = request.getPart("key");
-						String secretKeyFileName = Paths.get(getFileName(secretKeyPart)).getFileName().toString();
-						secretKeyPart.write(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName ); 
-						FileInputStream secretKeyFileInput = new FileInputStream(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName)); 
+					Part KeyPart = request.getPart("key");
+					switch(cipher)
+					{
+					case "symetric":
+						try {
+							
+							String secretKeyFileName = Paths.get(getFileName(KeyPart)).getFileName().toString();
+							KeyPart.write(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName );
+							secretKey = CryptoUtils.readSymetricKeyFromFile(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName));
+						/*FileInputStream secretKeyFileInput = new FileInputStream(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName)); 
 						ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
 						secretKey = (SecretKey)secretKeyObjectInput.readObject();
 						secretKeyObjectInput.close();
-						secretKeyFileInput.close();
-						new File(UPLOAD_DIRECTORY + secretKeyFileName).delete();
-						String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
-						File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
-						CryptoUtils.decrypt(secretKey,temp , decrypted);
-						response.setContentType("text/plain");
-						response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
-						ServletOutputStream sos = response.getOutputStream();
-						decrypted = new File(UPLOAD_DIRECTORY + File.separator + decryptFileName);
-						response.setContentLength((int)decrypted.length() );
-						FileInputStream in = new FileInputStream(decrypted);
-						byte[] buffer = new byte[4096];
-						int bytesRead = -1;
+						secretKeyFileInput.close();*/
+							new File(UPLOAD_DIRECTORY + secretKeyFileName).delete();
+							String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
+							File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
+							CryptoUtils.decrypt(secretKey, temp, decrypted);							
+							response.setContentType("text/plain");
+							response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
+							ServletOutputStream sos = response.getOutputStream();
+							decrypted = new File(UPLOAD_DIRECTORY + File.separator + decryptFileName);
+							response.setContentLength((int)decrypted.length() );
+							FileInputStream in = new FileInputStream(decrypted);
+							byte[] buffer = new byte[4096];
+							int bytesRead = -1;
 			         
-						while ((bytesRead = in.read(buffer)) != -1) {
-			            sos.write(buffer, 0, bytesRead);
-						}
-						in.close();
-						sos.close();
-						decrypted.delete();
-						new File(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName).delete();
+							while ((bytesRead = in.read(buffer)) != -1) {
+								sos.write(buffer, 0, bytesRead);
+							}
+							in.close();
+							sos.close();
+							decrypted.delete();
+							new File(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName).delete();
 					
 					//secretKey.destroy();
-					} catch (Exception e)
-					{
-						e.printStackTrace();
+						} catch (Exception e)
+							{
+								e.printStackTrace();
+							}
+						break;
+					case "asymetric":
+						try {
+							String privateKeyFileName = Paths.get(getFileName(KeyPart)).getFileName().toString();
+							KeyPart.write(UPLOAD_DIRECTORY + File.separator+ privateKeyFileName );
+							PrivateKey privateKey = CryptoUtils.readPrivateKeyFile(new File(UPLOAD_DIRECTORY + File.separator + privateKeyFileName));
+					/*FileInputStream secretKeyFileInput = new FileInputStream(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName)); 
+					ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
+					secretKey = (SecretKey)secretKeyObjectInput.readObject();
+					secretKeyObjectInput.close();
+					secretKeyFileInput.close();*/
+							new File(UPLOAD_DIRECTORY + privateKeyFileName).delete();
+							String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
+							File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
+							CryptoUtils.decryptAsymetric(privateKey, temp, decrypted);							
+							response.setContentType("text/plain");
+							response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
+							ServletOutputStream sos = response.getOutputStream();
+							decrypted = new File(UPLOAD_DIRECTORY + File.separator + decryptFileName);
+							response.setContentLength((int)decrypted.length() );
+							FileInputStream in = new FileInputStream(decrypted);
+							byte[] buffer = new byte[4096];
+							int bytesRead = -1;
+		         
+							while ((bytesRead = in.read(buffer)) != -1) {
+								sos.write(buffer, 0, bytesRead);
+							}
+							in.close();
+							sos.close();
+							decrypted.delete();
+							new File(UPLOAD_DIRECTORY + File.separator+ privateKeyFileName).delete();
+				
+						} 
+						catch (Exception e)
+						{
+							e.printStackTrace();
+						}
 					}
-					
+					new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 			}
-			new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 			
 			
 		}
