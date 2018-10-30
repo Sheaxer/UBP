@@ -193,7 +193,7 @@ public class CryptoUtils {
 		return secretKey;
 	}
 	
-	public static PrivateKey readPrivateKey(File inputFile) throws Exception
+	/*public static PrivateKey readPrivateKey(File inputFile) throws Exception
 	{
 		FileInputStream secretKeyFileInput = new FileInputStream(inputFile); 
 		ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
@@ -201,7 +201,7 @@ public class CryptoUtils {
 		secretKeyObjectInput.close();
 		secretKeyFileInput.close();
 		return privateKey;
-	}
+	}*/
 	
 	public static PublicKey readPublicKey(File inputFile) throws Exception
 	{
@@ -212,7 +212,7 @@ public class CryptoUtils {
 		return pub;
 	}
 	
-	public static PrivateKey readPrivateKeyFile (File inputFile) throws Exception
+	public static PrivateKey readPrivateKey (File inputFile) throws Exception
 	{
 		byte[] inputBytes = fileToBytes(inputFile);
 		PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);

@@ -167,7 +167,7 @@ public class FileUploadHandler extends HttpServlet {
 						try {
 							String privateKeyFileName = Paths.get(getFileName(KeyPart)).getFileName().toString();
 							KeyPart.write(UPLOAD_DIRECTORY + File.separator+ privateKeyFileName );
-							PrivateKey privateKey = CryptoUtils.readPrivateKeyFile(new File(UPLOAD_DIRECTORY + File.separator + privateKeyFileName));
+							PrivateKey privateKey = CryptoUtils.readPrivateKey(new File(UPLOAD_DIRECTORY + File.separator + privateKeyFileName));
 
 							new File(UPLOAD_DIRECTORY + privateKeyFileName).delete();
 							String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
