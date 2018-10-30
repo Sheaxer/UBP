@@ -22,8 +22,8 @@ public class CryptoUtils {
 
 	
 	private static final String ALGORITHM = "AES" ;
-	private static final String TRANSFORMATION = "PBKDF2WithHmacSHA1";
-	protected static final int SALTSIZE = 16;
+	//private static final String TRANSFORMATION = "PBKDF2WithHmacSHA1";
+	//protected static final int SALTSIZE = 16;
 	/*public static byte[] encrypt(String key, File inputFile, File outputFile)
 	throws Exception
 	{
@@ -33,14 +33,17 @@ public class CryptoUtils {
 		return salt;
 	}*/
 	
-	public static void decrypt(String key, File inputFile, File outputFile, byte[] salt) throws Exception
+	public static void decrypt(SecretKey secretKey, File inputFile, File outputFile) throws Exception
 	{
-		doCrypto(Cipher.DECRYPT_MODE,key,inputFile,outputFile,salt);
+		//SecretKey secretKey = generateKey();
+		doCrypto(Cipher.DECRYPT_MODE,secretKey,inputFile,outputFile,false);
 	}
 	
-	public static byte[] encrypt(String key, File inputFile, File outputFile) throws Exception
+	public static SecretKey encrypt(File inputFile, File outputFile, boolean append) throws Exception
 	{
-		return doCrypto(Cipher.ENCRYPT_MODE,key,inputFile,outputFile,null);
+		SecretKey secretKey = generateKey();
+		doCrypto(Cipher.ENCRYPT_MODE,secretKey,inputFile,outputFile,append);
+		return secretKey;
 	}
 	
 	/*public static void decrypt(String key, File inputFile, File outputFile, byte[] salt) throws Exception
@@ -49,23 +52,28 @@ public class CryptoUtils {
 		return;
 	}*/
 	
-	private static SecretKey generateKey(String password,byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException
+	private static SecretKey generateKey() throws NoSuchAlgorithmException, InvalidKeySpecException
 	{
+		/*byte[] salt = getSalt();
 		SecretKeyFactory factory = SecretKeyFactory.getInstance(TRANSFORMATION);
-		KeySpec spec = new PBEKeySpec(password.toCharArray(),salt,65536,256);
+		KeySpec spec = new PBEKeySpec(null,salt,65536,256);
 		SecretKey tmp = factory.generateSecret(spec);
-		SecretKey secretKey = new SecretKeySpec(tmp.getEncoded(), ALGORITHM);
+		SecretKey secretKey = new SecretKeySpec(tmp.getEncoded(), ALGORITHM);*/
+		SecureRandom secureRandom = new SecureRandom();
+		byte[] key = new byte[16];
+		secureRandom.nextBytes(key);
+		SecretKey secretKey = new SecretKeySpec(key,ALGORITHM);
 		return secretKey;
 	}
 	
-	public  static byte[] doCrypto(int mode,String key, File inputFile, File outputFile, byte[] salt) throws Exception {
+	public  static void doCrypto(int mode,SecretKey secretKey, File inputFile, File outputFile, boolean append) throws Exception {
 		// TODO Auto-generated method stub
 		try {
 			
-			if(salt == null)
+			/*if(salt == null)
 				salt=getSalt();
 			SecretKey secretKey= generateKey(key,salt);
-			//Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
+			//Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);*/
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
 			cipher.init(mode, secretKey);
 			FileInputStream in = new FileInputStream(inputFile);
@@ -74,13 +82,13 @@ public class CryptoUtils {
 			
 			byte[] outputBytes = cipher.doFinal(inputBytes);
 			
-			FileOutputStream out = new FileOutputStream(outputFile);
+			FileOutputStream out = new FileOutputStream(outputFile,append);
 			out.write(outputBytes);
 			
 			
 			in.close();
 			out.close();
-			return salt;
+			//return salt;
 			
 		} catch(NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException ex)
 		{
@@ -89,11 +97,11 @@ public class CryptoUtils {
 	}
 	
 	
-	private static byte[] getSalt() throws NoSuchAlgorithmException {
+	/*private static byte[] getSalt() throws NoSuchAlgorithmException {
 		SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
 		//sr.setSeed(System.currentTimeMillis());
         byte[] salt = new byte[SALTSIZE];
         sr.nextBytes(salt);
         return salt;
-	}
+	}*/
 }

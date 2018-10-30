@@ -7,10 +7,11 @@
 <title>Insert title here</title>
 </head>
 <body>
-<form action="Upload" method="post">
+<form action="Upload" method="post" enctype="multipart/form-data">
 
-Name of file<input type="text" name="fileName"> <br>
-Key <input type="text" name="key"> <br>
+File to decrypt: <input type="file" name="fileName" /> <br>
+Decryption key:  <input type="file" name="key" /> <br>
+<input type="hidden" name="mode" value="decrypt">
 <input type="submit" value="download" />
 </form>
 </body>

@@ -1,12 +1,18 @@
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import javax.crypto.SecretKey;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -51,135 +57,134 @@ public class FileUploadHandler extends HttpServlet {
 				
 			}*/
 			//
-			String key = request.getParameter("key");
+			String mode = request.getParameter("mode");
 			Part filePart = request.getPart("fileName");
 			String fileName = Paths.get(getFileName(filePart)).getFileName().toString();
 			//String fileName = filePart.getSubmittedFileName();
 			System.out.println("Filename is =" + fileName);
-			System.out.println("Key is = " + key);
-			
-			
-			//
+			System.out.println("Mode is = " + mode);
 			filePart.write(UPLOAD_DIRECTORY + File.separator + fileName);
 			File temp = new File(UPLOAD_DIRECTORY + File.separator + fileName);
-			File encrypted = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc");
-			byte[] salt;
-			try {
-				salt = CryptoUtils.encrypt(key, temp, encrypted);
-				File saltFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + "-salt.txt");
-				FileOutputStream saltOutput = new FileOutputStream(saltFile);
-				saltOutput.write(salt);
-				saltOutput.close();
-				
-			} catch (Exception e) {
+			SecretKey secretKey;
+			//
+			switch(mode) {
+				case "encrypt":
+					//filePart.write(UPLOAD_DIRECTORY + File.separator + fileName);
+					
+					File encrypted = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc");
+					
+					try {
+						secretKey = CryptoUtils.encrypt(temp, encrypted,false);
+						File secretKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key");
+						FileOutputStream secretKeyFileOutput = new FileOutputStream(secretKeyFile);
+						ObjectOutputStream secretKeyOutput = new ObjectOutputStream(secretKeyFileOutput);
+						secretKeyOutput.writeObject(secretKey);
+						secretKeyOutput.close();
+						secretKeyFileOutput.close();
+				        String[] fileNames = {fileName + ".enc",fileName + ".key"};
+				        byte[] zip = zipFiles(fileNames);
+				        ServletOutputStream sos = response.getOutputStream();
+		                response.setContentType("application/zip");
+		                response.setHeader("Content-Disposition", "attachment; filename=" + fileName + "-enc.zip");
+		                response.setContentLength(zip.length);
+		                sos.write(zip);
+		                sos.flush();
+		                //temp = new File(UPLOAD_DIRECTORY + File.separator + fileName);
+						new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc").delete();
+						//temp.delete();
+						//encrypted.delete();
+						new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key").delete();
+						//secretKeyFile.delete();
+						//secretKey.destroy();
+						sos.close();
+				        
+				        
+					} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+						e.printStackTrace();
+					}
+					//temp.delete();
+					break;
+				case "decrypt":
+					try {
+						Part secretKeyPart = request.getPart("key");
+						String secretKeyFileName = Paths.get(getFileName(secretKeyPart)).getFileName().toString();
+						secretKeyPart.write(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName ); 
+						FileInputStream secretKeyFileInput = new FileInputStream(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName)); 
+						ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
+						secretKey = (SecretKey)secretKeyObjectInput.readObject();
+						secretKeyObjectInput.close();
+						secretKeyFileInput.close();
+						new File(UPLOAD_DIRECTORY + secretKeyFileName).delete();
+						String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
+						File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
+						CryptoUtils.decrypt(secretKey,temp , decrypted);
+						response.setContentType("text/plain");
+						response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
+						ServletOutputStream sos = response.getOutputStream();
+						decrypted = new File(UPLOAD_DIRECTORY + File.separator + decryptFileName);
+						response.setContentLength((int)decrypted.length() );
+						FileInputStream in = new FileInputStream(decrypted);
+						byte[] buffer = new byte[4096];
+						int bytesRead = -1;
+			         
+						while ((bytesRead = in.read(buffer)) != -1) {
+			            sos.write(buffer, 0, bytesRead);
+						}
+						in.close();
+						sos.close();
+						decrypted.delete();
+						new File(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName).delete();
+					
+					//secretKey.destroy();
+					} catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+					
 			}
+			new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 			
-			temp.delete();
 			
 		}
 		else
 		{
-			String fileName = request.getParameter("fileName");
-			File file = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc");
-			String key = request.getParameter("key");
-			if(file.exists() && !file.isDirectory())
-			{
-				response.setContentType("text/plain");
-		        response.setHeader("Content-disposition", "attachment; filename=" + fileName);
-		        File decrypted= new File(UPLOAD_DIRECTORY + File.separator + fileName);
-		        File saltedFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + "-salt.txt");
-		        FileInputStream saltInput = new FileInputStream(saltedFile);
-		        byte[] salt = new byte[CryptoUtils.SALTSIZE];
-		        saltInput.read(salt);
-		        saltInput.close();
-		        try {
-					CryptoUtils.decrypt(key, file, decrypted, salt);
-					decrypted =  new File(UPLOAD_DIRECTORY + File.separator + fileName);
-					System.out.println("Writing repsonse");
-					FileInputStream in = new FileInputStream(decrypted);
-					byte[] buffer = new byte[4096];
-					OutputStream out = response.getOutputStream();
-					
-					response.setContentLength((int) decrypted.length());
-					int bytesRead = -1;
-			         
-			        while ((bytesRead = in.read(buffer)) != -1) {
-			            out.write(buffer, 0, bytesRead);
-			        }
-					in.close();
-					decrypted.delete();
-					
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		        
-			}
+			
 		}
 		
 		
-		/*if(ServletFileUpload.isMultipartContent(request)){
-			try {
-				List<FileItem> multipart =  new ServletFileUpload(new DiskFileItemFactory()).parseRequest(new ServletRequestContext(request));
-				System.out.println("I AM HERE");
-				File temp = null;
-				File encrypted = null;
-				String  key = null;
-				
-				for(FileItem item: multipart)
-				{
-					if(!item.isFormField())
-					{
-						String name = new File(item.getName()).getName();
-						System.out.println("mame is " + name);
-						temp = new File(UPLOAD_DIRECTORY + File.separator + name);
-						item.write(temp);
-						encrypted = new File(UPLOAD_DIRECTORY + File.separator + name + ".enc");
-					}
-					else
-					{
-						if(item.getFieldName().equals("fname"))
-							key = item.getString();
-					}
-				}
-				CryptoUtils.encrypt(key, temp, encrypted);
-				//response.setContentType("text/plain");
-				response.setContentType("text/plain");
-				OutputStream out = response.getOutputStream();
-			    //response.
-				
-				
-				FileInputStream in = new FileInputStream(encrypted);
-				byte[] buffer = new byte[4096];
-				int length;
-				
-				while((length = in.read(buffer)) > 0)
-				{
-					out.write(buffer,0,length);
-					System.out.println(buffer);
-				}
-				in.close();
-				out.flush();
-				
-				request.setAttribute("message", "File Uploaded Successfully");
-				
-				out.write("ay".getBytes());
-			
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				request.setAttribute("message", "File enc failed due to " + e);
-			}
-					//
-		} else
-		{
-			System.out.println("IS NOT MULTIPART");
-			request.setAttribute("message", "Sorry");
-		}*/
+		
 	
 	}
+	
+	private byte[] zipFiles(String[] files) throws IOException 
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ZipOutputStream zos = new ZipOutputStream(baos);
+        byte bytes[] = new byte[2048];
+
+        for (String fileName : files) {
+            FileInputStream fis = new FileInputStream(UPLOAD_DIRECTORY + File.separator + fileName);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+
+            zos.putNextEntry(new ZipEntry(fileName));
+
+            int bytesRead;
+            while ((bytesRead = bis.read(bytes)) != -1) {
+                zos.write(bytes, 0, bytesRead);
+            }
+            zos.closeEntry();
+            bis.close();
+            fis.close();
+        }
+        zos.flush();
+        baos.flush();
+        zos.close();
+        baos.close();
+
+        return baos.toByteArray();
+    }
+	
 	
 	private String getFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");

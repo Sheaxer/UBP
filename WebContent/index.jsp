@@ -10,12 +10,11 @@
 <b> Hello World </b>
 <form  action="Upload" method="post" enctype="multipart/form-data">
 	<input type="file" name="fileName" />
-	Key : <input type= "text" id="fkey" name="key"><br>
-	<input type="hidden" name="mode" value="upload">
+	<input type="hidden" name="mode" value="encrypt">
 	<input type="submit" value="upload" />
 </form>
 
-<a href="./download.jsp"> download files</a>
+<a href="./decrypt.jsp"> decrypt files</a>
 
 </body>
 </html>
