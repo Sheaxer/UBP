@@ -15,7 +15,7 @@ public class FileSelector extends JPanel implements ActionListener {
     public FileSelector(boolean keySelector, boolean readMode) {
         super();
 
-        this.fileTF = new JTextField(30);
+        this.fileTF = new JTextField(40);
         this.selectBtn = new JButton("Vybrať súbor");
 
         this.add(this.fileTF);
@@ -54,7 +54,7 @@ public class FileSelector extends JPanel implements ActionListener {
 
             // set the file filter if this is a key selector
             if(this.keySelector) {
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("DER RSA key format", "der");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("RSA kľúč v .der formáte", "der");
                 chooser.setFileFilter(filter);
             }
 

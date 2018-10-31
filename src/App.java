@@ -1,13 +1,11 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 
 public class App extends JFrame implements ActionListener {
 
@@ -26,13 +24,20 @@ public class App extends JFrame implements ActionListener {
 
     private JButton runBtn;
 
+    private InfoDisplay infoDisplay;
+    private InfoDisplay errorDisplay;
+
     public App() {
-        super();
-        this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.PAGE_AXIS));
+        super("ÚPB 2018 - Zadanie 3");
+        this.setLayout(new BorderLayout());
+
+        JPanel bodyPanel = new JPanel();
+        bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.PAGE_AXIS));
+        this.add(bodyPanel, "Center");
 
         // Mode
         JPanel modePanel = new JPanel();
-        this.add(modePanel);
+        bodyPanel.add(modePanel);
         modePanel.add(new JLabel("Mód:"));
 
         ButtonGroup rbModeGroup = new ButtonGroup();
@@ -50,7 +55,7 @@ public class App extends JFrame implements ActionListener {
 
         // Input File
         JPanel inFilePanel = new JPanel();
-        this.add(inFilePanel);
+        bodyPanel.add(inFilePanel);
         inFilePanel.add(new JLabel("Vstupný súbor:"));
 
         this.inFileSelector = new FileSelector(false, true);
@@ -58,7 +63,7 @@ public class App extends JFrame implements ActionListener {
 
         // Public key
         this.publicKeyPanel = new JPanel();
-        this.add(this.publicKeyPanel);
+        bodyPanel.add(this.publicKeyPanel);
         this.publicKeyPanel.add(new JLabel("Verejný kľúč (.DER):"));
 
         this.publicKeyFileSelector = new FileSelector(true, true);
@@ -67,7 +72,7 @@ public class App extends JFrame implements ActionListener {
 
         // Private key
         this.privateKeyPanel = new JPanel();
-        this.add(this.privateKeyPanel);
+        bodyPanel.add(this.privateKeyPanel);
         this.privateKeyPanel.add(new JLabel("Súkromný kľúč (.DER):"));
 
         this.privateKeyFileSelector = new FileSelector(true, true);
@@ -75,7 +80,7 @@ public class App extends JFrame implements ActionListener {
 
         // Output file
         JPanel outFilePanel = new JPanel();
-        this.add(outFilePanel);
+        bodyPanel.add(outFilePanel);
         outFilePanel.add(new JLabel("Výstupný súbor:"));
 
         this.outFileSelector = new FileSelector(false, false);
@@ -83,10 +88,21 @@ public class App extends JFrame implements ActionListener {
 
         // Button
         JPanel runBtnPanel = new JPanel();
-        this.add(runBtnPanel);
+        bodyPanel.add(runBtnPanel);
         this.runBtn = new JButton("Spustiť");
         runBtnPanel.add(this.runBtn);
         this.runBtn.addActionListener(this);
+
+        // Bottom Panel
+		JPanel bottomPanel = new JPanel();
+		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.PAGE_AXIS));
+		this.add(bottomPanel, "South");
+
+		this.infoDisplay = new InfoDisplay( InfoDisplay.INFO );
+		bottomPanel.add(this.infoDisplay);
+
+		this.errorDisplay = new InfoDisplay( InfoDisplay.ERROR );
+		bottomPanel.add(this.errorDisplay);
     }
 
     @Override
@@ -104,65 +120,88 @@ public class App extends JFrame implements ActionListener {
             this.privateKeyPanel.setVisible(true);
         }
         else if(source.equals(this.runBtn)) {
-            // do encryption/decryption
+        	// hide the InfoDisplays
+			this.infoDisplay.hideDisplay();
+			this.errorDisplay.hideDisplay();
+
+            // get the input file
+			File inputFile = new File(this.inFileSelector.getFilePath());
+			if( !inputFile.exists()) {
+				this.errorDisplay.display("Vstupný súbor neexistuje.", false);
+				return;
+			}
+			else if( !inputFile.canRead() ) {
+				this.errorDisplay.display("Zo vstupného súboru sa nedá čítať.", false);
+				return;
+			}
+
+			// create the output file
+			File outputFile = new File(this.outFileSelector.getFilePath());
+
+			if(!outputFile.exists()) {
+				try {
+					outputFile.createNewFile();
+				} catch (IOException | SecurityException ex) {
+					this.errorDisplay.display("Výstupný súbor nie je možné vytvoriť.", false);
+					return;
+				}
+			}
+			else if(!outputFile.canWrite()) {
+				this.errorDisplay.display("Do výstupného súboru sa nedá zapisovať.", false);
+				return;
+			}
+
+        	// do encryption/decryption
             if(this.modeEnc.isSelected()) {
                 // Encryption
-                File inputFile = new File(this.inFileSelector.getFilePath());
-				if( !inputFile.exists()) {
-					// neexistuje vstupny subor
-					// TODO
-					System.err.println("Neexistuje vstupny subor");
-				}
 
-				File outputFile = new File(this.outFileSelector.getFilePath());
-
-				// ziskam si kluc z der suboru
+				PublicKey key;
+				// get key from .der file
 				try {
 					File publicKeyFile = new File(this.publicKeyFileSelector.getFilePath());
 
-					PublicKey key = CryptoUtils.readPublicKey(publicKeyFile);
+					key = CryptoUtils.readPublicKey(publicKeyFile);
 
-					// zasifrujem vstupny subor
-					try {
-						CryptoUtils.encryptAsymetric(key, inputFile, outputFile);
-					} catch (Exception eInner) {
-						// TODO
-						eInner.printStackTrace();
-					}
+				} catch (Exception ex) {
+					this.errorDisplay.display("Chyba pri načítavaní kľúča. Uistite sa, že súbor existuje, že je v .der formáte a že sa jedná o verejný kľúč.", false);
+					return;
+				}
 
-				} catch (Exception eOuter) {
-					// TODO
-					eOuter.printStackTrace();
+				this.infoDisplay.display("Šifrujem...", false);
+
+				// encrypt the file
+				try {
+					CryptoUtils.encryptAsymetric(key, inputFile, outputFile);
+					this.infoDisplay.display("Hotovo", true);
+				} catch (Exception ex) {
+					this.infoDisplay.hideDisplay();
+					this.errorDisplay.display("Chyba pri šifrovaní súboru. Uistite sa, že súbor exituje a že používate správny verejný kľúč", false);
 				}
 			}
             else {
                 // Decryption
-				File inputFile = new File(this.inFileSelector.getFilePath());
-				if( !inputFile.exists()) {
-					// neexistuje vstupny subor
-					// TODO
-					System.err.println("Neexistuje vstupny subor");
-				}
 
-				File outputFile = new File(this.outFileSelector.getFilePath());
-
-				// ziskam si kluc z der suboru
+				// get key from .der file
+				PrivateKey key;
 				try {
 					File privateKeyFile = new File(this.privateKeyFileSelector.getFilePath());
 
-					PrivateKey key = CryptoUtils.readPrivateKey( privateKeyFile );
+					key = CryptoUtils.readPrivateKey(privateKeyFile);
 
-					// desifrujem vstupny subor
-					try {
-						CryptoUtils.decryptAsymetric(key, inputFile, outputFile);
-					} catch (Exception eInner) {
-						// TODO
-						eInner.printStackTrace();
-					}
+				} catch (Exception ex) {
+					this.errorDisplay.display("Chyba pri načítavaní kľúča. Uistite sa, že súbor existuje, že je v .der formáte a že sa jedná o súkromný kľúč.", false);
+					return;
+				}
 
-				} catch (Exception eOuter) {
-					// TODO
-					eOuter.printStackTrace();
+				this.infoDisplay.display("Dešifrujem...", false); // swing doesn't display this for some reason
+
+				// decrypt the file
+				try {
+					CryptoUtils.decryptAsymetric(key, inputFile, outputFile);
+					this.infoDisplay.display("Hotovo", true);
+				} catch (Exception ex) {
+					this.infoDisplay.hideDisplay();
+					this.errorDisplay.display("Chyba pri dešifrovaní súboru. Uistite sa, že súbor exituje, že používate správny súkormý kľúč a že dešifrujete správny súbor.", false);
 				}
             }
         }
@@ -170,7 +209,7 @@ public class App extends JFrame implements ActionListener {
 
     public static void main(String args[]) {
         App a = new App();
-        a.setSize(640, 260);
+        a.setSize(740, 300);
         a.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         a.setVisible(true);
     }
