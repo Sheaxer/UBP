@@ -53,8 +53,6 @@ public class CryptoUtils {
 		encrypt(secretKey, inputFile, outputFile, true);
 	}
 	
-	
-	
 	public static KeyPair encryptAsymetric(File inputFile, File outputFile) throws Exception
 	{
 		KeyPair keyPair = generateKeyPair();
@@ -74,7 +72,7 @@ public class CryptoUtils {
 		Cipher asymetricCipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);
 		asymetricCipher.init(Cipher.DECRYPT_MODE, privateKey);
 		
-		byte[] secretKeyBytes = asymetricCipher.doFinal(rsaBlock);;
+		byte[] secretKeyBytes = asymetricCipher.doFinal(rsaBlock);
 		
 		
 		SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, ALGORITHM);
@@ -125,9 +123,8 @@ public class CryptoUtils {
 	}
 	
 	
-	private static SecretKey generateKey() throws NoSuchAlgorithmException, InvalidKeySpecException
+	private static SecretKey generateKey()
 	{
-		
 		SecureRandom secureRandom = new SecureRandom();
 		byte[] key = new byte[KEY_SIZE];
 		secureRandom.nextBytes(key);
@@ -161,7 +158,7 @@ public class CryptoUtils {
 			
 		} catch(NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException ex)
 		{
-			throw new Exception ("Error encrypting/decrypting file "+ex.getMessage());
+			throw new Exception ("Error encrypting/decrypting file "+ex.getMessage(), ex);
 		}
 	}
 	
