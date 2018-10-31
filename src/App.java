@@ -118,7 +118,9 @@ public class App extends JFrame implements ActionListener {
 
 				// ziskam si kluc z der suboru
 				try {
-					PublicKey key = CryptoUtils.readPublicKey(this.publicKeyFileSelector.getFilePath());
+					File publicKeyFile = new File(this.publicKeyFileSelector.getFilePath());
+
+					PublicKey key = CryptoUtils.readPublicKey(publicKeyFile);
 
 					// zasifrujem vstupny subor
 					try {
@@ -128,7 +130,7 @@ public class App extends JFrame implements ActionListener {
 						eInner.printStackTrace();
 					}
 
-				} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException eOuter) {
+				} catch (Exception eOuter) {
 					// TODO
 					eOuter.printStackTrace();
 				}
@@ -146,7 +148,9 @@ public class App extends JFrame implements ActionListener {
 
 				// ziskam si kluc z der suboru
 				try {
-					PrivateKey key = CryptoUtils.readPrivateKey(this.privateKeyFileSelector.getFilePath());
+					File privateKeyFile = new File(this.privateKeyFileSelector.getFilePath());
+
+					PrivateKey key = CryptoUtils.readPrivateKey( privateKeyFile );
 
 					// desifrujem vstupny subor
 					try {
@@ -156,7 +160,7 @@ public class App extends JFrame implements ActionListener {
 						eInner.printStackTrace();
 					}
 
-				} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException eOuter) {
+				} catch (Exception eOuter) {
 					// TODO
 					eOuter.printStackTrace();
 				}
