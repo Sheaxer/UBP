@@ -31,6 +31,10 @@ public class FileSelector extends JPanel implements ActionListener {
         return this.fileTF.getText();
     }
 
+    public void setFilePath(String newPath) {
+        this.fileTF.setText(newPath);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();

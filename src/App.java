@@ -27,6 +27,8 @@ public class App extends JFrame implements ActionListener {
     private InfoDisplay infoDisplay;
     private InfoDisplay errorDisplay;
 
+    private boolean decryptionSelected = true;
+
     public App() {
         super("ÚPB 2018 - Zadanie 3");
         this.setLayout(new BorderLayout());
@@ -113,11 +115,27 @@ public class App extends JFrame implements ActionListener {
             // show public key field
             this.publicKeyPanel.setVisible(true);
             this.privateKeyPanel.setVisible(false);
+
+            this.decryptionSelected = false;
         }
         else if(source.equals(this.modeDec)) {
             // show private key field
             this.publicKeyPanel.setVisible(false);
             this.privateKeyPanel.setVisible(true);
+
+            // QoL feature
+			if( !this.decryptionSelected) {
+				// user switched from encryption to decryption
+				// we help them by swapping the output field to the input and clearing the output
+				this.inFileSelector.setFilePath(this.outFileSelector.getFilePath());
+				this.outFileSelector.setFilePath("");
+
+				// let the user know to avoid confusion
+				this.infoDisplay.display("Výstupný súbor šifrovania bol automaticky nastavený ako vstupný súbor dešifrovania.", true);
+
+				// reset the flag
+				this.decryptionSelected = true;
+			}
         }
         else if(source.equals(this.runBtn)) {
         	// hide the InfoDisplays
@@ -163,7 +181,7 @@ public class App extends JFrame implements ActionListener {
 					key = CryptoUtils.readPublicKey(publicKeyFile);
 
 				} catch (Exception ex) {
-					this.errorDisplay.display("Chyba pri načítavaní kľúča. Uistite sa, že súbor existuje, že je v .der formáte a že sa jedná o verejný kľúč.", false);
+					this.errorDisplay.display("Chyba pri načítavaní kľúča. Uistite sa, že súbor existuje, že je v .der formáte a že sa jedná o VEREJNÝ kľúč.", false);
 					return;
 				}
 
@@ -175,7 +193,7 @@ public class App extends JFrame implements ActionListener {
 					this.infoDisplay.display("Hotovo", true);
 				} catch (Exception ex) {
 					this.infoDisplay.hideDisplay();
-					this.errorDisplay.display("Chyba pri šifrovaní súboru. Uistite sa, že súbor exituje a že používate správny verejný kľúč", false);
+					this.errorDisplay.display("Chyba pri šifrovaní súboru. Uistite sa, že súbor exituje a že používate správny VEREJNÝ kľúč", false);
 				}
 			}
             else {
@@ -189,7 +207,7 @@ public class App extends JFrame implements ActionListener {
 					key = CryptoUtils.readPrivateKey(privateKeyFile);
 
 				} catch (Exception ex) {
-					this.errorDisplay.display("Chyba pri načítavaní kľúča. Uistite sa, že súbor existuje, že je v .der formáte a že sa jedná o súkromný kľúč.", false);
+					this.errorDisplay.display("Chyba pri načítavaní kľúča. Uistite sa, že súbor existuje, že je v .der formáte a že sa jedná o SÚKROMNÝ kľúč.", false);
 					return;
 				}
 
@@ -201,7 +219,7 @@ public class App extends JFrame implements ActionListener {
 					this.infoDisplay.display("Hotovo", true);
 				} catch (Exception ex) {
 					this.infoDisplay.hideDisplay();
-					this.errorDisplay.display("Chyba pri dešifrovaní súboru. Uistite sa, že súbor exituje, že používate správny súkormý kľúč a že dešifrujete správny súbor.", false);
+					this.errorDisplay.display("Chyba pri dešifrovaní súboru. Uistite sa, že súbor exituje, že používate správny SÚKROMNÝ kľúč a že dešifrujete správny súbor.", false);
 				}
             }
         }

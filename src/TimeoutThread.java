@@ -9,7 +9,7 @@ public class TimeoutThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(6000);
 
 			if(!this.isInterrupted()) {
 				display.hideDisplay();
