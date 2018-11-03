@@ -24,6 +24,7 @@ import java.util.Base64;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 
@@ -36,7 +37,8 @@ import java.security.interfaces.RSAPrivateKey;
 public class CryptoUtils {
 
 	
-	private static final String ALGORITHM = "AES" ;
+	private static final String ALGORITHM = "AES/CTR/NoPadding";
+	private static final String KEY_ALGORITHM = "AES";
 	private static final String ASYMETRIC_ALGORITHM = "RSA";
 	private static final int KEY_SIZE = 16;
 	private static final int ASYMETRIC_KEY_SIZE = 2048;
@@ -73,9 +75,8 @@ public class CryptoUtils {
 		asymetricCipher.init(Cipher.DECRYPT_MODE, privateKey);
 		
 		byte[] secretKeyBytes = asymetricCipher.doFinal(rsaBlock);
-		
-		
-		SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, ALGORITHM);
+
+		SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, KEY_ALGORITHM);
 		
 		byte[] inputBytes = Arrays.copyOfRange(fileBytes, rsaBlockSize, fileBytes.length);
 		
@@ -128,7 +129,7 @@ public class CryptoUtils {
 		SecureRandom secureRandom = new SecureRandom();
 		byte[] key = new byte[KEY_SIZE];
 		secureRandom.nextBytes(key);
-		SecretKey secretKey = new SecretKeySpec(key,ALGORITHM);
+		SecretKey secretKey = new SecretKeySpec(key,KEY_ALGORITHM);
 		return secretKey;
 	}
 	
@@ -144,7 +145,11 @@ public class CryptoUtils {
 			
 		
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
-			cipher.init(mode, secretKey);
+
+			byte[] iv = new byte[KEY_SIZE]; // by default is all zeros
+			IvParameterSpec ivSpec = new IvParameterSpec(iv);
+			cipher.init(mode, secretKey, ivSpec);
+
 			
 			byte[] outputBytes = cipher.doFinal(inputBytes);
 			
