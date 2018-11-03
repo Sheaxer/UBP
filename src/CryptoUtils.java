@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
@@ -24,6 +22,7 @@ import java.util.Base64;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 
@@ -36,8 +35,10 @@ import java.security.interfaces.RSAPrivateKey;
 public class CryptoUtils {
 
 	
-	private static final String ALGORITHM = "AES" ;
-	private static final String ASYMETRIC_ALGORITHM = "RSA";
+	private static final String ALGORITHM = "AES/CTR/NoPadding";
+	private static final String KEY_ALGORITHM = "AES";
+	private static final String ASYMETRIC_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"; // ECB is not acctualy used (mode is None); this syntax exists for backwards compatibility
+	private static final String KEY_ASYMETRIC_ALGORITHM = "RSA";
 	private static final int KEY_SIZE = 16;
 	private static final int ASYMETRIC_KEY_SIZE = 2048;
 	
@@ -52,8 +53,6 @@ public class CryptoUtils {
 		output.close();
 		encrypt(secretKey, inputFile, outputFile, true);
 	}
-	
-	
 	
 	public static KeyPair encryptAsymetric(File inputFile, File outputFile) throws Exception
 	{
@@ -74,10 +73,9 @@ public class CryptoUtils {
 		Cipher asymetricCipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);
 		asymetricCipher.init(Cipher.DECRYPT_MODE, privateKey);
 		
-		byte[] secretKeyBytes = asymetricCipher.doFinal(rsaBlock);;
-		
-		
-		SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, ALGORITHM);
+		byte[] secretKeyBytes = asymetricCipher.doFinal(rsaBlock);
+
+		SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, KEY_ALGORITHM);
 		
 		byte[] inputBytes = Arrays.copyOfRange(fileBytes, rsaBlockSize, fileBytes.length);
 		
@@ -125,13 +123,12 @@ public class CryptoUtils {
 	}
 	
 	
-	private static SecretKey generateKey() throws NoSuchAlgorithmException, InvalidKeySpecException
+	private static SecretKey generateKey()
 	{
-		
 		SecureRandom secureRandom = new SecureRandom();
 		byte[] key = new byte[KEY_SIZE];
 		secureRandom.nextBytes(key);
-		SecretKey secretKey = new SecretKeySpec(key,ALGORITHM);
+		SecretKey secretKey = new SecretKeySpec(key,KEY_ALGORITHM);
 		return secretKey;
 	}
 	
@@ -147,7 +144,11 @@ public class CryptoUtils {
 			
 		
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
-			cipher.init(mode, secretKey);
+
+			byte[] iv = new byte[KEY_SIZE]; // by default is all zeros
+			IvParameterSpec ivSpec = new IvParameterSpec(iv);
+			cipher.init(mode, secretKey, ivSpec);
+
 			
 			byte[] outputBytes = cipher.doFinal(inputBytes);
 			
@@ -161,7 +162,7 @@ public class CryptoUtils {
 			
 		} catch(NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException ex)
 		{
-			throw new Exception ("Error encrypting/decrypting file "+ex.getMessage());
+			throw new Exception ("Error encrypting/decrypting file "+ex.getMessage(), ex);
 		}
 	}
 	
@@ -207,7 +208,7 @@ public class CryptoUtils {
 	{
 		byte[] inputBytes = fileToBytes(inputFile);
 		X509EncodedKeySpec ks = new X509EncodedKeySpec(inputBytes);
-		KeyFactory kf = KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
+		KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
 		PublicKey pub = kf.generatePublic(ks);
 		return pub;
 	}
@@ -216,7 +217,7 @@ public class CryptoUtils {
 	{
 		byte[] inputBytes = fileToBytes(inputFile);
 		PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);
-		KeyFactory kf = KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
+		KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
 		PrivateKey pvt = kf.generatePrivate(ks);
 		return pvt;
 	}
@@ -252,3 +253,4 @@ public class CryptoUtils {
 	
 	
 }
+
