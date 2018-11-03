@@ -3,10 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-<<<<<<< HEAD
-=======
 import java.io.IOException;
->>>>>>> origin/bonus
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -157,60 +154,6 @@ public class App extends JFrame implements ActionListener {
         	// do encryption/decryption
             if(this.modeEnc.isSelected()) {
                 // Encryption
-<<<<<<< HEAD
-                File inputFile = new File(this.inFileSelector.getFilePath());
-                if( !inputFile.exists()) {
-                    // neexistuje vstupny subor
-                    // TODO
-                    System.err.println("Neexistuje vstupny subor");
-                }
-
-                File outputFile = new File(this.outFileSelector.getFilePath());
-
-                // ziskam si kluc z der suboru
-                try {
-                    // zasifrujem vstupny subor
-                    try {
-                                                PublicKey key = CryptoUtils.readPublicKey(new File(this.publicKeyFileSelector.getFilePath()));
-                        CryptoUtils.encryptAsymetric(key, inputFile, outputFile);
-                    } catch (Exception eInner) {
-                        // TODO
-                        eInner.printStackTrace();
-                    }
-
-                } catch (Exception eOuter) {
-                    // TODO
-                    eOuter.printStackTrace();
-                }
-            }
-            else {
-                // Decryption
-                File inputFile = new File(this.inFileSelector.getFilePath());
-                if( !inputFile.exists()) {
-                    // neexistuje vstupny subor
-                    // TODO
-                    System.err.println("Neexistuje vstupny subor");
-                }
-
-                File outputFile = new File(this.outFileSelector.getFilePath());
-
-                // ziskam si kluc z der suboru
-                try {
-                    PrivateKey key = CryptoUtils.readPrivateKey(new File(this.privateKeyFileSelector.getFilePath()));
-
-                    // desifrujem vstupny subor
-                    try {
-                        CryptoUtils.decryptAsymetric(key, inputFile, outputFile);
-                    } catch (Exception eInner) {
-                        // TODO
-                        eInner.printStackTrace();
-                    }
-
-                } catch (Exception eOuter) {
-                    // TODO
-                    eOuter.printStackTrace();
-                }
-=======
 
 				PublicKey key;
 				// get key from .der file
@@ -260,7 +203,6 @@ public class App extends JFrame implements ActionListener {
 					this.infoDisplay.hideDisplay();
 					this.errorDisplay.display("Chyba pri dešifrovaní súboru. Uistite sa, že súbor exituje, že používate správny súkormý kľúč a že dešifrujete správny súbor.", false);
 				}
->>>>>>> origin/bonus
             }
         }
     }
