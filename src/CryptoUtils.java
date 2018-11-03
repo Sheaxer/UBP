@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
@@ -39,7 +37,8 @@ public class CryptoUtils {
 	
 	private static final String ALGORITHM = "AES/CTR/NoPadding";
 	private static final String KEY_ALGORITHM = "AES";
-	private static final String ASYMETRIC_ALGORITHM = "RSA";
+	private static final String ASYMETRIC_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"; // ECB is not acctualy used (mode is None); this syntax exists for backwards compatibility
+	private static final String KEY_ASYMETRIC_ALGORITHM = "RSA";
 	private static final int KEY_SIZE = 16;
 	private static final int ASYMETRIC_KEY_SIZE = 2048;
 	
@@ -209,7 +208,7 @@ public class CryptoUtils {
 	{
 		byte[] inputBytes = fileToBytes(inputFile);
 		X509EncodedKeySpec ks = new X509EncodedKeySpec(inputBytes);
-		KeyFactory kf = KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
+		KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
 		PublicKey pub = kf.generatePublic(ks);
 		return pub;
 	}
@@ -218,7 +217,7 @@ public class CryptoUtils {
 	{
 		byte[] inputBytes = fileToBytes(inputFile);
 		PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);
-		KeyFactory kf = KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
+		KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
 		PrivateKey pvt = kf.generatePrivate(ks);
 		return pvt;
 	}
