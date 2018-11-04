@@ -7,7 +7,7 @@
 <title>Insert title here</title>
 </head>
 <body>
-<b> Hello World </b>
+<b>${message}</b>
 <h1>Symetric Encryption</h1>
 <form  action="Upload" method="post" enctype="multipart/form-data">
 	<input type="file" name="fileName" />
@@ -19,7 +19,8 @@
 
 <h1>Asymetric Encryption</h1>
 <form  action="Upload" method="post" enctype="multipart/form-data">
-	<input type="file" name="fileName" />
+	File to encrypt<input type="file" name="fileName" /> <br>
+	Optional public key<input type="file" name="key" />
 	<input type="hidden" name="mode" value="encrypt">
 	<input type="hidden" name="cipher" value="asymetric">
 	<input type="submit" value="upload" />

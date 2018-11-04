@@ -41,9 +41,26 @@ public class CryptoUtils {
 	private static final String KEY_ASYMETRIC_ALGORITHM = "RSA";
 	private static final int KEY_SIZE = 32;
 	private static final int ASYMETRIC_KEY_SIZE = 2048;
+	private static CryptoErrors error = CryptoErrors.NONE;
+	
+	public static CryptoErrors getError()
+	{
+		return error;
+	}
+	
+    public static void resetError()
+    {
+    	error = CryptoErrors.NONE;
+    }
+	
 	
 	public static void encryptAsymetric(PublicKey publicKey, File inputFile, File outputFile) throws Exception
 	{
+		if (publicKey == null)
+		{
+			error = CryptoErrors.INVALID_ASYMETRIC_KEY;
+			return;
+		}
 		SecretKey secretKey = generateKey();
 		Cipher cipherAsymetric  = Cipher.getInstance(ASYMETRIC_ALGORITHM);
 		cipherAsymetric.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -69,7 +86,7 @@ public class CryptoUtils {
 		byte[] fileBytes = new byte[(int) inputFile.length()];
 		in.read(fileBytes);
 		System.arraycopy(fileBytes,0, rsaBlock, 0, rsaBlockSize);
-		
+		in.close();
 		Cipher asymetricCipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);
 		asymetricCipher.init(Cipher.DECRYPT_MODE, privateKey);
 		
@@ -168,7 +185,7 @@ public class CryptoUtils {
 	
 	private static KeyPair generateKeyPair() throws Exception
 	{
-		KeyPairGenerator gen = KeyPairGenerator.getInstance(ASYMETRIC_ALGORITHM);
+		KeyPairGenerator gen = KeyPairGenerator.getInstance(KEY_ASYMETRIC_ALGORITHM);
 		gen.initialize(ASYMETRIC_KEY_SIZE);
 		return gen.genKeyPair();
 	}
@@ -184,14 +201,21 @@ public class CryptoUtils {
 		secretKeyFileOutput.close();
 	}
 	
-	public static SecretKey readSymetricKeyFromFile(File inputFile) throws Exception
+	public static SecretKey readSymetricKeyFromFile(File inputFile)
 	{
-		FileInputStream secretKeyFileInput = new FileInputStream(inputFile); 
-		ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
-		SecretKey secretKey = (SecretKey)secretKeyObjectInput.readObject();
-		secretKeyObjectInput.close();
-		secretKeyFileInput.close();
-		return secretKey;
+		try {
+			FileInputStream secretKeyFileInput = new FileInputStream(inputFile); 
+			ObjectInputStream secretKeyObjectInput = new ObjectInputStream(secretKeyFileInput);
+			SecretKey secretKey = (SecretKey)secretKeyObjectInput.readObject();
+			secretKeyObjectInput.close();
+			secretKeyFileInput.close();
+			return secretKey;
+		}
+		catch (Exception e)
+		{
+			error = CryptoErrors.INVALID_SYMETRIC_KEY;
+			return null;
+		}
 	}
 	
 	/*public static PrivateKey readPrivateKey(File inputFile) throws Exception
@@ -204,22 +228,38 @@ public class CryptoUtils {
 		return privateKey;
 	}*/
 	
-	public static PublicKey readPublicKey(File inputFile) throws Exception
+	public static PublicKey readPublicKey(File inputFile)
 	{
-		byte[] inputBytes = fileToBytes(inputFile);
-		X509EncodedKeySpec ks = new X509EncodedKeySpec(inputBytes);
-		KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
-		PublicKey pub = kf.generatePublic(ks);
-		return pub;
+		try
+		{
+			byte[] inputBytes = fileToBytes(inputFile);
+			X509EncodedKeySpec ks = new X509EncodedKeySpec(inputBytes);
+			KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
+			PublicKey pub = kf.generatePublic(ks);
+			return pub;
+		}
+		catch (Exception e)
+		{
+			error = CryptoErrors.INVALID_ASYMETRIC_KEY;
+			return null;
+		}
 	}
 	
 	public static PrivateKey readPrivateKey (File inputFile) throws Exception
 	{
-		byte[] inputBytes = fileToBytes(inputFile);
-		PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);
-		KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
-		PrivateKey pvt = kf.generatePrivate(ks);
-		return pvt;
+		try
+		{
+			byte[] inputBytes = fileToBytes(inputFile);
+			PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);
+			KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
+			PrivateKey pvt = kf.generatePrivate(ks);
+			return pvt;
+		}
+		catch (Exception e)
+		{
+			error = CryptoErrors.INVALID_ASYMETRIC_KEY;
+			return null;
+		}
 	}
 	
 	

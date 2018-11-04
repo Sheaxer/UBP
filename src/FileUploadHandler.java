@@ -2,10 +2,13 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -47,6 +50,18 @@ public class FileUploadHandler extends HttpServlet {
 			String mode = request.getParameter("mode");
 			Part filePart = request.getPart("fileName");
 			String fileName = Paths.get(getFileName(filePart)).getFileName().toString();
+			if(fileName.isEmpty())
+			{
+				System.out.println("Nonexistent file -- aborting");
+				String message = "No file set";
+				request.setAttribute("message", message);
+				if(mode =="encrypt")
+					request.getRequestDispatcher("/index.jsp").forward(request, response);
+				else
+					request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
+				return;
+			}
+			
 			//String fileName = filePart.getSubmittedFileName();
 			System.out.println("Filename is =" + fileName);
 			System.out.println("Mode is = " + mode);
@@ -55,6 +70,7 @@ public class FileUploadHandler extends HttpServlet {
 			SecretKey secretKey;
 			String cipher = request.getParameter("cipher");
 			//
+			CryptoErrors error;
 			switch(mode) {
 				case "encrypt":
 					//filePart.write(UPLOAD_DIRECTORY + File.separator + fileName);
@@ -64,12 +80,17 @@ public class FileUploadHandler extends HttpServlet {
 					{
 						case "symetric":
 							try {
+								long startTime = System.currentTimeMillis();
 								secretKey = CryptoUtils.encrypt(temp, encrypted,false);
+								long stopTime = System.currentTimeMillis();
+							    long elapsedTime = stopTime - startTime;
+							    System.out.println("Time is " + elapsedTime);
 								File secretKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key");
 							
 								CryptoUtils.writeKeytoFile(secretKey, secretKeyFile);
 								String[] fileNames = {fileName + ".enc",fileName + ".key"};
 								byte[] zip = zipFiles(fileNames);
+								
 								ServletOutputStream sos = response.getOutputStream();
 								response.setContentType("application/zip");
 								response.setHeader("Content-Disposition", "attachment; filename=" + fileName + "-enc.zip");
@@ -81,7 +102,6 @@ public class FileUploadHandler extends HttpServlet {
 						//temp.delete();
 						//encrypted.delete();
 								new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key").delete();
-						
 								sos.close();
 							}
 							catch (Exception e) {
@@ -91,55 +111,128 @@ public class FileUploadHandler extends HttpServlet {
 							} 
 							break;
 						case "asymetric":
+							//String keyFileName = 
+							Part keyPart = request.getPart("key");
+							String keyName=null;
 							
-						try {
-							KeyPair keyPair= CryptoUtils.encryptAsymetric(temp, encrypted);
-							File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey");
-							File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey");
-							CryptoUtils.writeKeyPairToFile(keyPair, publicKeyFile ,privateKeyFile);
-							privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey");
-							publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey");
-							
-							String[] fileNames = {fileName + ".enc",fileName + ".prkey"};
-							byte[] zip = zipFiles(fileNames);
-							ServletOutputStream sos = response.getOutputStream();
-							response.setContentType("application/zip");
-							response.setHeader("Content-Disposition", "attachment; filename=" + fileName + "-enc.zip");
-							response.setContentLength(zip.length);
-							sos.write(zip);
-							sos.flush();
-							sos.close();
-							new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc").delete();
-							new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey").delete();
-							new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey").delete();
-							
-							
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-							
-							
-							
+							try {
+								String[] fileNames = null;
+								keyName = Paths.get(getFileName(keyPart)).getFileName().toString();
+								if(!keyName.isEmpty())
+								{
+									
+									keyPart.write(UPLOAD_DIRECTORY + File.separator + keyName);
+									File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + keyName);
+									PublicKey publicKey= CryptoUtils.readPublicKey(publicKeyFile);
+									//error = CryptoUtils.getError();
+									if(publicKey == null)
+									{
+										temp.delete();
+										new File(UPLOAD_DIRECTORY + File.separator + keyName).delete();
+										System.out.println("Invalid public key format");
+										String message = "Invalid public key format";
+										request.setAttribute("message", message);
+										request.getRequestDispatcher("/index.jsp").forward(request, response);
+										return;
+									}
+									else
+									{
+										long startTime = System.currentTimeMillis();
+										CryptoUtils.encryptAsymetric(publicKey,temp, encrypted);
+										long stopTime = System.currentTimeMillis();
+									    long elapsedTime = stopTime - startTime;
+									    System.out.println("Time is " + elapsedTime);
+										fileNames = new String[]{fileName + ".enc"};
+									}
+								}
+								else
+								{
+									long startTime = System.currentTimeMillis();
+									KeyPair keyPair= CryptoUtils.encryptAsymetric(temp, encrypted);
+									long stopTime = System.currentTimeMillis();
+								    long elapsedTime = stopTime - startTime;
+								    System.out.println("Time is " + elapsedTime);
+									File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey");
+									File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey");
+									CryptoUtils.writeKeyPairToFile(keyPair, publicKeyFile ,privateKeyFile);
+									
+									privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey");
+									publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey");
+									fileNames= new String[]{fileName + ".enc",fileName + ".prkey", fileName + ".pubkey"};
+								}
+								
+								
+								if(fileNames != null)
+								{
+									byte[] zip = zipFiles(fileNames);
+									ServletOutputStream sos = response.getOutputStream();
+									response.setContentType("application/zip");
+									response.setHeader("Content-Disposition", "attachment; filename=" + fileName + "-enc.zip");
+									response.setContentLength(zip.length);
+									sos.write(zip);
+									sos.flush();
+									sos.close();
+								}
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							finally
+							{
+								if(keyPart != null)
+								{
+									new File(UPLOAD_DIRECTORY + File.separator + keyName).delete();
+								}
+								else
+								{
+									new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey").delete();
+									new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey").delete();
+								}
+								new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc").delete();
+							}	
 							
 					}
 					//temp.delete();
 					break;
 				case "decrypt":
-					Part KeyPart = request.getPart("key");
+					Part keyPart = request.getPart("key");
 					switch(cipher)
 					{
 					case "symetric":
 						try {
 							
-							String secretKeyFileName = Paths.get(getFileName(KeyPart)).getFileName().toString();
-							KeyPart.write(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName );
+							String secretKeyFileName = Paths.get(getFileName(keyPart)).getFileName().toString();
+							if(secretKeyFileName.isEmpty())
+							{
+								System.out.println("No key set");
+								temp.delete();
+								String message = "No key set";
+								request.setAttribute("message", message);
+								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
+								return;
+							}
+							keyPart.write(UPLOAD_DIRECTORY + File.separator+ secretKeyFileName );
 							secretKey = CryptoUtils.readSymetricKeyFromFile(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName));
-
+							if(secretKey == null)
+							{
+								temp.delete();
+								System.out.println("No private key is set");
+								String message = "No private key is set";
+								request.setAttribute("message", message);
+								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
+							}
 							new File(UPLOAD_DIRECTORY + secretKeyFileName).delete();
 							String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
 							File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
+							
+							long startTime = System.currentTimeMillis();
+							
 							CryptoUtils.decrypt(secretKey, temp, decrypted);							
+							
+							long stopTime = System.currentTimeMillis();
+						    long elapsedTime = stopTime - startTime;
+						    System.out.println("Time is " + elapsedTime);
+							
 							response.setContentType("text/plain");
 							response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
 							ServletOutputStream sos = response.getOutputStream();
@@ -160,19 +253,46 @@ public class FileUploadHandler extends HttpServlet {
 					//secretKey.destroy();
 						} catch (Exception e)
 							{
+								temp.delete();
+								String message = "File is not decrypted by selected key";
+								request.setAttribute("message", message);
+								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
 								e.printStackTrace();
 							}
 						break;
 					case "asymetric":
 						try {
-							String privateKeyFileName = Paths.get(getFileName(KeyPart)).getFileName().toString();
-							KeyPart.write(UPLOAD_DIRECTORY + File.separator+ privateKeyFileName );
+							String privateKeyFileName = Paths.get(getFileName(keyPart)).getFileName().toString();
+							if(privateKeyFileName.isEmpty())
+							{
+								temp.delete();
+								System.out.println("No private key is set");
+								String message = "No private key is set";
+								request.setAttribute("message", message);
+								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
+								return;
+							}
+							keyPart.write(UPLOAD_DIRECTORY + File.separator+ privateKeyFileName );
 							PrivateKey privateKey = CryptoUtils.readPrivateKey(new File(UPLOAD_DIRECTORY + File.separator + privateKeyFileName));
+							if(privateKey == null)
+							{
+								String message = "Invalid private key format";
+								request.setAttribute("message", message);
+								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
+							}
 
 							new File(UPLOAD_DIRECTORY + privateKeyFileName).delete();
 							String decryptFileName = fileName.substring(0,fileName.lastIndexOf('.'));
 							File decrypted = new File(UPLOAD_DIRECTORY + File.separator+ decryptFileName); // dangerous should fix
+							
+							long startTime = System.currentTimeMillis();
+							
 							CryptoUtils.decryptAsymetric(privateKey, temp, decrypted);							
+							
+							long stopTime = System.currentTimeMillis();
+						    long elapsedTime = stopTime - startTime;
+						    System.out.println("Time is " + elapsedTime);
+							
 							response.setContentType("text/plain");
 							response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
 							ServletOutputStream sos = response.getOutputStream();
@@ -193,6 +313,11 @@ public class FileUploadHandler extends HttpServlet {
 						} 
 						catch (Exception e)
 						{
+							new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
+							String message = "File not encrypted by sent key";
+							request.setAttribute("message", message);
+							request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
+							System.out.println("File not encrypted by sent key");
 							e.printStackTrace();
 						}
 					}
