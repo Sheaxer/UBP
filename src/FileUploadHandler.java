@@ -26,9 +26,9 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
 
 @WebServlet("/Upload")
-@MultipartConfig(fileSizeThreshold=1024*1024*10, 	// 10 MB 
-maxFileSize=1024*1024*50,      	// 50 MB
-maxRequestSize=1024*1024*100)   	// 100 MB
+@MultipartConfig(fileSizeThreshold=1024*1024*10 	// 500 MB 
+      	// 2 GB
+)   	// 3 GB
 public class FileUploadHandler extends HttpServlet {
 
 	/**
@@ -85,6 +85,7 @@ public class FileUploadHandler extends HttpServlet {
 								long stopTime = System.currentTimeMillis();
 							    long elapsedTime = stopTime - startTime;
 							    System.out.println("Time is " + elapsedTime);
+							    new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 								File secretKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".key");
 							
 								CryptoUtils.writeKeytoFile(secretKey, secretKeyFile);
@@ -97,7 +98,7 @@ public class FileUploadHandler extends HttpServlet {
 								response.setContentLength(zip.length);
 								sos.write(zip);
 								sos.flush();
-		                //temp = new File(UPLOAD_DIRECTORY + File.separator + fileName);
+								
 								new File(UPLOAD_DIRECTORY + File.separator + fileName + ".enc").delete();
 						//temp.delete();
 						//encrypted.delete();
@@ -127,7 +128,7 @@ public class FileUploadHandler extends HttpServlet {
 									//error = CryptoUtils.getError();
 									if(publicKey == null)
 									{
-										temp.delete();
+										new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 										new File(UPLOAD_DIRECTORY + File.separator + keyName).delete();
 										System.out.println("Invalid public key format");
 										String message = "Invalid public key format";
@@ -142,6 +143,7 @@ public class FileUploadHandler extends HttpServlet {
 										long stopTime = System.currentTimeMillis();
 									    long elapsedTime = stopTime - startTime;
 									    System.out.println("Time is " + elapsedTime);
+									    new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 										fileNames = new String[]{fileName + ".enc"};
 									}
 								}
@@ -152,6 +154,7 @@ public class FileUploadHandler extends HttpServlet {
 									long stopTime = System.currentTimeMillis();
 								    long elapsedTime = stopTime - startTime;
 								    System.out.println("Time is " + elapsedTime);
+								    new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 									File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".prkey");
 									File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + fileName + ".pubkey");
 									CryptoUtils.writeKeyPairToFile(keyPair, publicKeyFile ,privateKeyFile);
@@ -205,7 +208,7 @@ public class FileUploadHandler extends HttpServlet {
 							if(secretKeyFileName.isEmpty())
 							{
 								System.out.println("No key set");
-								temp.delete();
+								new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 								String message = "No key set";
 								request.setAttribute("message", message);
 								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
@@ -215,7 +218,7 @@ public class FileUploadHandler extends HttpServlet {
 							secretKey = CryptoUtils.readSymetricKeyFromFile(new File(UPLOAD_DIRECTORY + File.separator + secretKeyFileName));
 							if(secretKey == null)
 							{
-								temp.delete();
+								new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 								System.out.println("No private key is set");
 								String message = "No private key is set";
 								request.setAttribute("message", message);
@@ -232,7 +235,7 @@ public class FileUploadHandler extends HttpServlet {
 							long stopTime = System.currentTimeMillis();
 						    long elapsedTime = stopTime - startTime;
 						    System.out.println("Time is " + elapsedTime);
-							
+						    new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 							response.setContentType("text/plain");
 							response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
 							ServletOutputStream sos = response.getOutputStream();
@@ -253,7 +256,7 @@ public class FileUploadHandler extends HttpServlet {
 					//secretKey.destroy();
 						} catch (Exception e)
 							{
-								temp.delete();
+								new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 								String message = "File is not decrypted by selected key";
 								request.setAttribute("message", message);
 								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
@@ -265,7 +268,7 @@ public class FileUploadHandler extends HttpServlet {
 							String privateKeyFileName = Paths.get(getFileName(keyPart)).getFileName().toString();
 							if(privateKeyFileName.isEmpty())
 							{
-								temp.delete();
+								new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 								System.out.println("No private key is set");
 								String message = "No private key is set";
 								request.setAttribute("message", message);
@@ -276,9 +279,11 @@ public class FileUploadHandler extends HttpServlet {
 							PrivateKey privateKey = CryptoUtils.readPrivateKey(new File(UPLOAD_DIRECTORY + File.separator + privateKeyFileName));
 							if(privateKey == null)
 							{
+								new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 								String message = "Invalid private key format";
 								request.setAttribute("message", message);
 								request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
+								return;
 							}
 
 							new File(UPLOAD_DIRECTORY + privateKeyFileName).delete();
@@ -292,7 +297,7 @@ public class FileUploadHandler extends HttpServlet {
 							long stopTime = System.currentTimeMillis();
 						    long elapsedTime = stopTime - startTime;
 						    System.out.println("Time is " + elapsedTime);
-							
+						    new File(UPLOAD_DIRECTORY + File.separator + fileName).delete();
 							response.setContentType("text/plain");
 							response.setHeader("Content-disposition", "attachment; filename=" + decryptFileName);
 							ServletOutputStream sos = response.getOutputStream();
