@@ -68,7 +68,6 @@ public class CryptoUtils {
 		FileInputStream in = new FileInputStream(inputFile);
 		byte[] fileBytes = new byte[(int) inputFile.length()];
 		in.read(fileBytes);
-		in.close();
 		System.arraycopy(fileBytes,0, rsaBlock, 0, rsaBlockSize);
 		
 		Cipher asymetricCipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);

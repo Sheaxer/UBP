@@ -19,8 +19,7 @@
 
 <h1>Asymetric Encryption</h1>
 <form  action="Upload" method="post" enctype="multipart/form-data">
-	File to encrypt<input type="file" name="fileName" />
-	Optional - Public Key used to encrypt<input type="file" name="publicKey" />
+	<input type="file" name="fileName" />
 	<input type="hidden" name="mode" value="encrypt">
 	<input type="hidden" name="cipher" value="asymetric">
 	<input type="submit" value="upload" />
