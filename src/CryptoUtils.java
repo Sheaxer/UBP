@@ -39,7 +39,7 @@ public class CryptoUtils {
 	private static final String KEY_ALGORITHM = "AES";
 	private static final String ASYMETRIC_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"; // ECB is not acctualy used (mode is None); this syntax exists for backwards compatibility
 	private static final String KEY_ASYMETRIC_ALGORITHM = "RSA";
-	private static final int KEY_SIZE = 16;
+	private static final int KEY_SIZE = 32;
 	private static final int ASYMETRIC_KEY_SIZE = 2048;
 	
 	public static void encryptAsymetric(PublicKey publicKey, File inputFile, File outputFile) throws Exception
@@ -146,7 +146,7 @@ public class CryptoUtils {
 		
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
 
-			byte[] iv = new byte[KEY_SIZE]; // by default is all zeros
+			byte[] iv = new byte[16]; // by default is all zeros
 			IvParameterSpec ivSpec = new IvParameterSpec(iv);
 			cipher.init(mode, secretKey, ivSpec);
 
