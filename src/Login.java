@@ -5,20 +5,17 @@
 //         potrebnych upravach.                                         //
 // Uloha3: Vlozte do prihlasovania nejaku formu oneskorenia.            //
 //////////////////////////////////////////////////////////////////////////
-package passwordsecurity2;
-
 import java.io.IOException;
 import java.util.StringTokenizer;
-import passwordsecurity2.Database.MyResult;
 
 public class Login {
-    protected static MyResult prihlasovanie(String meno, String heslo) throws IOException, Exception{
+    protected static Database.MyResult prihlasovanie(String meno, String heslo) throws IOException, Exception{
         /*
         *   Delay je vhodne vytvorit este pred kontolou prihlasovacieho mena.
         */
-        MyResult account = Database.find("hesla.txt", meno);
+        Database.MyResult account = Database.find("hesla.txt", meno);
         if (!account.getFirst()){
-            return new MyResult(false, "Nespravne meno.");
+            return new Database.MyResult(false, "Nespravne meno.");
         }
         else {
             StringTokenizer st = new StringTokenizer(account.getSecond(), ":");
@@ -28,8 +25,8 @@ public class Login {
             */
             boolean rightPassword = st.nextToken().equals(heslo);
             if (!rightPassword)    
-                return new MyResult(false, "Nespravne heslo.");
+                return new Database.MyResult(false, "Nespravne heslo.");
         }
-        return new MyResult(true, "Uspesne prihlasenie.");
+        return new Database.MyResult(true, "Uspesne prihlasenie.");
     }
 }

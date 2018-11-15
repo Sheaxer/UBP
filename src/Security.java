@@ -5,9 +5,6 @@
 // Je vhodne vytvorit aj dalsie pomocne funkcie napr. na porovnavanie   //
 // hesla ulozeneho v databaze so zadanym heslom.                        //
 //////////////////////////////////////////////////////////////////////////
-package passwordsecurity2;
-
-
 public class Security {
     
     private static String hash(String password) throws Exception{  

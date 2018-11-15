@@ -1,10 +1,7 @@
-package passwordsecurity2;
-
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import passwordsecurity2.Database.MyResult;
 
 
 public class GUI_Registration extends javax.swing.JFrame {
@@ -125,7 +122,7 @@ public class GUI_Registration extends javax.swing.JFrame {
     private void Registracia(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Registracia
         try {
                 if (Arrays.equals(jPasswordField3.getPassword(), jPasswordField2.getPassword())){
-                    MyResult tmp = Registration.registracia(jTextField1.getText(), String.valueOf(jPasswordField2.getPassword()));
+                    Database.MyResult tmp = Registration.registracia(jTextField1.getText(), String.valueOf(jPasswordField2.getPassword()));
                     if (!tmp.getFirst())
                         JOptionPane.showMessageDialog(rootPane, tmp.getSecond());
                     else

@@ -4,17 +4,14 @@
 // Uloha2: Pouzit vytvorenu funkciu na hashovanie a ulozit heslo        //
 //         v zahashovanom tvare.                                        //
 //////////////////////////////////////////////////////////////////////////
-package passwordsecurity2;
-
 import java.security.NoSuchAlgorithmException;
-import passwordsecurity2.Database.MyResult;
 
 
 public class Registration {
-    protected static MyResult registracia(String meno, String heslo) throws NoSuchAlgorithmException, Exception{
+    protected static Database.MyResult registracia(String meno, String heslo) throws NoSuchAlgorithmException, Exception{
         if (Database.exist("hesla.txt", meno)){
             System.out.println("Meno je uz zabrate.");
-            return new MyResult(false, "Meno je uz zabrate.");
+            return new Database.MyResult(false, "Meno je uz zabrate.");
         }
         else {
             /*
@@ -22,7 +19,7 @@ public class Registration {
             */
             Database.add("hesla.txt", meno + ":" + heslo);
         }
-        return new MyResult(true, "");
+        return new Database.MyResult(true, "");
     }
     
 }
