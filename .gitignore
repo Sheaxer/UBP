@@ -3,3 +3,6 @@
 
 # build objects
 build/
+
+# password file from example
+hesla.txt
