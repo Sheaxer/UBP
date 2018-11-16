@@ -20,6 +20,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -40,6 +41,15 @@ public class FileUploadHandler extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		// check if the user is logged in
+		HttpSession session = request.getSession(false); // get session
+		if(session == null) {
+			// user is not logged in
+			response.sendRedirect("index.jsp");
+			return;
+		}
+		
+		// process file upload
 		System.out.println(UPLOAD_DIRECTORY);
 
 		System.out.println("REQUEST IS =" + request.getContentType().toString());
@@ -52,8 +62,8 @@ public class FileUploadHandler extends HttpServlet {
 				System.out.println("Nonexistent file -- aborting");
 				String message = "No file set";
 				request.setAttribute("message", message);
-				if (mode == "encrypt")
-					request.getRequestDispatcher("/index.jsp").forward(request, response);
+				if (mode.equals("encrypt"))
+					request.getRequestDispatcher("/encrypt.jsp").forward(request, response);
 				else
 					request.getRequestDispatcher("/decrypt.jsp").forward(request, response);
 				return;
@@ -126,7 +136,7 @@ public class FileUploadHandler extends HttpServlet {
 								System.out.println("Invalid public key format");
 								String message = "Invalid public key format";
 								request.setAttribute("message", message);
-								request.getRequestDispatcher("/index.jsp").forward(request, response);
+								request.getRequestDispatcher("/encrypt.jsp").forward(request, response);
 								return;
 							} else {
 								long startTime = System.currentTimeMillis();
