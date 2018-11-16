@@ -44,6 +44,13 @@ public class RegistrationServlet extends HttpServlet {
 			request.getRequestDispatcher("/register.jsp").forward(request, response);
 			return;
 		}
+
+		// check if password is legit
+		if( !checkPassword(enteredPassword)) {
+			request.setAttribute("message", "Password must contain a lowercase letter, an uppercase letter, a number and a non-alphanumeric character.");
+			request.getRequestDispatcher("/register.jsp").forward(request, response);
+			return;
+		}
 		
 		// TODO Checks for password complexity and dictionary attacks
 		// TODO Checks for users with same username
@@ -54,6 +61,30 @@ public class RegistrationServlet extends HttpServlet {
 		request.setAttribute("message", "Registration successful");
 		request.getRequestDispatcher("/index.jsp").forward(request, response);
 		return;
+	}
+
+	private static boolean checkPassword(String pass) {
+		char ch;
+		boolean capitalFlag = false;
+		boolean lowerCaseFlag = false;
+		boolean numberFlag = false;
+		boolean nonalphanumericFlag = false;
+		for(int i=0;i < pass.length();i++) {
+			ch = pass.charAt(i);
+			if( Character.isDigit(ch)) {
+				numberFlag = true;
+			}
+			else if (Character.isUpperCase(ch)) {
+				capitalFlag = true;
+			} else if (Character.isLowerCase(ch)) {
+				lowerCaseFlag = true;
+			} else {
+				nonalphanumericFlag = true;
+			}
+			if(numberFlag && capitalFlag && lowerCaseFlag && nonalphanumericFlag)
+				return true;
+		}
+		return false;
 	}
 
 }
