@@ -15,9 +15,6 @@ import javax.persistence.*;
 @Entity
 public class UserData implements Serializable {
 
-	@Transient
-	public static final int SALT_SIZE=16;
-	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
