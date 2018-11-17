@@ -39,16 +39,21 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		// TODO read user salt and password from DB
-		String referenceHash = "heslo";
-		String salt = "salt";
-		String enteredHash = UserUtils.hashPassword(enteredPassword, salt);
+		//String referenceHash = "heslo";
+		//String salt = "salt";
+		//String enteredHash = UserUtils.hashPassword(enteredPassword, salt);
 		
 		// TODO add login delay
 		// check password match
-		if(enteredHash.equals(referenceHash)) {
+		Long id = DatabaseManager.getUserId(username, enteredPassword);
+		
+		if(id != null) {
 			// login the user
 			HttpSession session = request.getSession(); // create a session
 			session.setAttribute("username", username);
+			String loginHash = DatabaseManager.logInUser(id);
+			session.setAttribute("loginHash", loginHash);
+			
 			session.setMaxInactiveInterval(5*60); // 5 min
 			
 			// redirect to encryption

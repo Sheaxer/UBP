@@ -187,7 +187,7 @@ public class CryptoUtils {
 		}
 	}
 	
-	private static KeyPair generateKeyPair() throws Exception
+	public static KeyPair generateKeyPair() throws Exception
 	{
 		KeyPairGenerator gen = KeyPairGenerator.getInstance(KEY_ASYMETRIC_ALGORITHM);
 		gen.initialize(ASYMETRIC_KEY_SIZE);

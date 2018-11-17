@@ -58,6 +58,21 @@ public class RegistrationServlet extends HttpServlet {
 		// TODO generate RSA keypair for user and save to DB
 		// TODO generate salt, hash user password and store in DB
 		
+		
+		
+		try {
+			UserData userData = new UserData();
+			userData.changeName(username);
+			userData.changePassword(enteredPassword);
+			userData.setKeys(CryptoUtils.generateKeyPair());
+			Long id = DatabaseManager.addNewUser(userData);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
 		request.setAttribute("message", "Registration successful");
 		request.getRequestDispatcher("/index.jsp").forward(request, response);
 		return;

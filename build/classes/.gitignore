@@ -1,2 +1,11 @@
-/UserLogin.class
 /CleanupSessionListener.class
+/CryptoErrors.class
+/CryptoUtils.class
+/DatabaseManager.class
+/FileUploadHandler.class
+/LoginServlet.class
+/LogoutServlet.class
+/RegistrationServlet.class
+/UserData.class
+/UserLogin.class
+/UserUtils.class

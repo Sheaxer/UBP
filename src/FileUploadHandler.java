@@ -36,7 +36,7 @@ public class FileUploadHandler extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 205242440643911308L;
 
-	private final String UPLOAD_DIRECTORY = "/tmp";
+	private final String UPLOAD_DIRECTORY = "C:\\uploads";
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)

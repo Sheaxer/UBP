@@ -10,7 +10,7 @@
 <%
 // allow access only if session exists
 String user = null;
-if(session.getAttribute("username") == null) {
+if(session.getAttribute("loginHash") == null) {
 	response.sendRedirect("index.jsp");
 }
 else {

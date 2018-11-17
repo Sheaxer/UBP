@@ -61,10 +61,10 @@ public class DatabaseManager {
 		em.close();
 	}
 	
-	public static String logInUser(String name, String password)
+	public static String logInUser(Long id)
 	{
 		//EntityManager em=emf.createEntityManager();
-		Long id=getUserId(name,password);
+		//Long id=getUserId(name,password);
 		if(id == null)
 			return null;
 		UserLogin userLogin = new UserLogin();
@@ -89,8 +89,22 @@ public class DatabaseManager {
 			e.printStackTrace();
 		}
 		return null;
-		
-		
+	}
+	
+	public static void logoutUser(String loginHash)
+	{
+		EntityManager em=emf.createEntityManager();
+		TypedQuery<UserLogin> q = em.createQuery("SELECT u from UserLogin u WHERE u.loginHash = :loginHash", UserLogin.class);
+		q.setParameter("loginHash", loginHash);
+		UserLogin userLogin = q.getSingleResult();
+		if(userLogin != null)
+		{
+			em.getTransaction().begin();
+			em.remove(userLogin);
+			em.flush();
+			em.getTransaction().commit();
+			em.close();
+		}
 	}
 	
 }
