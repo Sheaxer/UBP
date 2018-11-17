@@ -10,5 +10,9 @@ public class CleanupSessionListener implements HttpSessionListener {
         System.out.println("Session is getting destroooyed");
         String name = (String) event.getSession().getAttribute("username");
         System.out.println("Testing which user was deleted? " + name);
+        String loginHash = (String) event.getSession().getAttribute("loginHash");
+        
+        DatabaseManager.logoutUser(loginHash);
+        
     }
 }
