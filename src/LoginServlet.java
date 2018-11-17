@@ -37,13 +37,14 @@ public class LoginServlet extends HttpServlet {
 			request.getRequestDispatcher("/index.jsp").forward(request, response);
 			return;
 		}
+
+		// delay
+		try {
+			Thread.sleep(500); // 0.5s
+		} catch (InterruptedException e) {
+			System.out.println("Sleep interrupted");
+		}
 		
-		// TODO read user salt and password from DB
-		//String referenceHash = "heslo";
-		//String salt = "salt";
-		//String enteredHash = UserUtils.hashPassword(enteredPassword, salt);
-		
-		// TODO add login delay
 		// check password match
 		Long id = DatabaseManager.getUserId(username, enteredPassword);
 		
