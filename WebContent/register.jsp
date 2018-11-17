@@ -14,7 +14,7 @@ if(session.getAttribute("username") != null) {
 }
 %>
 <b>${message}</b>
-<h1>Login</h1>
+<h1>Registration</h1>
 <form action="Registration" method="post">
 Username: <input type="text" name="username"><br>
 Password: <input type="password" name="password"><br>

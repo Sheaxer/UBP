@@ -1,6 +1,8 @@
 
 
 import java.io.IOException;
+
+import javax.persistence.PersistenceException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -47,35 +49,36 @@ public class RegistrationServlet extends HttpServlet {
 
 		// check if password is legit
 		if( !checkPassword(enteredPassword)) {
-			request.setAttribute("message", "Password must contain a lowercase letter, an uppercase letter, a number and a non-alphanumeric character.");
+			request.setAttribute("message", "Password must be at least 8 characters long and contain a lowercase letter, an uppercase letter, a number and a non-alphanumeric character.");
 			request.getRequestDispatcher("/register.jsp").forward(request, response);
 			return;
 		}
 		
-		// TODO Checks for password complexity and dictionary attacks
-		// TODO Checks for users with same username
-		// TODO Create the user in the DB
-		// TODO generate RSA keypair for user and save to DB
-		// TODO generate salt, hash user password and store in DB
-		
-		
+		// TODO Checks for dictionary attacks
 		
 		try {
+			// create new user
 			UserData userData = new UserData();
 			userData.changeName(username);
 			userData.changePassword(enteredPassword);
 			userData.setKeys(CryptoUtils.generateKeyPair());
-			Long id = DatabaseManager.addNewUser(userData);
+			Long id = DatabaseManager.addNewUser(userData); // fails if user with the same username exists
+			
+			// redirect user to the login page
+			request.setAttribute("message", "Registration successful");
+			request.getRequestDispatcher("/index.jsp").forward(request, response);
+			return;
+			
+		} catch (PersistenceException pe) {
+			// user already exists (probably)
+			request.setAttribute("message", "This username is already taken.");
+			request.getRequestDispatcher("/register.jsp").forward(request, response);
+			return;
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		
-		request.setAttribute("message", "Registration successful");
-		request.getRequestDispatcher("/index.jsp").forward(request, response);
-		return;
 	}
 
 	private static boolean checkPassword(String pass) {
@@ -84,6 +87,13 @@ public class RegistrationServlet extends HttpServlet {
 		boolean lowerCaseFlag = false;
 		boolean numberFlag = false;
 		boolean nonalphanumericFlag = false;
+		
+		// check for password length
+		if(pass.length() < 8) {
+			return false;
+		}
+		
+		// check for character diversity
 		for(int i=0;i < pass.length();i++) {
 			ch = pass.charAt(i);
 			if( Character.isDigit(ch)) {
