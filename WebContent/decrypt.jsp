@@ -37,6 +37,12 @@ File to decrypt: <input type="file" name="fileName" /> <br>
 <input type="hidden" name="cipher" value="asymetric">
 <input type="submit" value="download" />
 </form>
+<h1>Download asymetric keys</h1>
+<form action="Upload">
+<input type="hidden" name="mode" value="download">
+<input type="submit" value="Download keys" />
+</form>
+
 <br>
 <a href="<%=response.encodeURL("encrypt.jsp") %>"> encrypt files</a>
 <br>

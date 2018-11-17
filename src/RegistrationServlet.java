@@ -61,6 +61,8 @@ public class RegistrationServlet extends HttpServlet {
 			UserData userData = new UserData();
 			userData.changeName(username);
 			userData.changePassword(enteredPassword);
+			
+			
 			userData.setKeys(CryptoUtils.generateKeyPair());
 			Long id = DatabaseManager.addNewUser(userData); // fails if user with the same username exists
 			

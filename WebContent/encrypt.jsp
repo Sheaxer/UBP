@@ -36,6 +36,11 @@ else {
 	<input type="hidden" name="cipher" value="asymetric">
 	<input type="submit" value="upload" />
 </form>
+<h1>Download asymetric keys</h1>
+<form action="Upload">
+<input type="hidden" name="mode" value="download">
+<input type="submit" value="Download keys" />
+</form>
 <br>
 <a href="<%=response.encodeURL("decrypt.jsp") %>"> decrypt files</a>
 <br>
