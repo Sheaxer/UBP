@@ -31,7 +31,7 @@ else {
 <h1>Asymmetric Encryption</h1>
 <form  action="Upload" method="post" enctype="multipart/form-data">
 	File to encrypt<input type="file" name="fileName" /> <br>
-	Optional public key<input type="file" name="key" />
+	<!--  Optional public key<input type="file" name="key" /> -->
 	<input type="hidden" name="mode" value="encrypt">
 	<input type="hidden" name="cipher" value="asymetric">
 	<input type="submit" value="upload" />

@@ -32,7 +32,7 @@ Decryption key:  <input type="file" name="key" /> <br>
 <form action="Upload" method="post" enctype="multipart/form-data">
 
 File to decrypt: <input type="file" name="fileName" /> <br>
-Decryption key:  <input type="file" name="key" /> <br>
+<!--  Decryption key:  <input type="file" name="key" /> <br> -->
 <input type="hidden" name="mode" value="decrypt">
 <input type="hidden" name="cipher" value="asymetric">
 <input type="submit" value="download" />
