@@ -28,6 +28,11 @@ public class UserLogin implements Serializable {
 		this.userId = id;
 	}
 	
+	public Long getUserId()
+	{
+		return this.userId;
+	}
+	
 	public void setLoginHash(String loginHash)
 	{
 		this.loginHash = loginHash;

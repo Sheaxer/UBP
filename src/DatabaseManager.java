@@ -1,4 +1,6 @@
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
 import javax.persistence.EntityManager;
@@ -35,6 +37,26 @@ public class DatabaseManager {
 				return userData.getId();
 			return null;
 		}
+		return null;
+	}
+	
+	public static PublicKey getPublicKey(Long id)
+	{
+		EntityManager em=emf.createEntityManager();
+		UserData userData=em.find(UserData.class, id);
+		em.close();
+		if(userData!=null)
+			return userData.getPublicKey();
+		return null;
+	}
+	
+	public static PrivateKey getPrivateKey(Long id)
+	{
+		EntityManager em=emf.createEntityManager();
+		UserData userData=em.find(UserData.class, id);
+		em.close();
+		if(userData!=null)
+			return userData.getPrivateKey();
 		return null;
 	}
 	
@@ -87,6 +109,20 @@ public class DatabaseManager {
 		} catch (InvalidKeySpecException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static Long getUserIdFromHash(String loginHash)
+	{
+		EntityManager em=emf.createEntityManager();
+		TypedQuery<UserLogin> q = em.createQuery("SELECT u from UserLogin u WHERE u.loginHash = :loginHash", UserLogin.class);
+		q.setParameter("loginHash", loginHash);
+		UserLogin userLogin = q.getSingleResult();
+		em.close();
+		if(userLogin != null)
+		{
+			return userLogin.getUserId();
 		}
 		return null;
 	}
