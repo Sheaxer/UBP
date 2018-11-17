@@ -3,5 +3,11 @@
 	<persistence-unit name="UBP">
 		<class>UserData</class>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
+		<properties>
+		    <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://147.175.121.188:3306/keystoredatabase" />
+            <property name="javax.persistence.jdbc.user" value="keymanager" />
+            <property name="javax.persistence.jdbc.password" value="A(YBsrD4/,](eAy+" />
+		</properties>
 	</persistence-unit>
 </persistence>

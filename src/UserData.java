@@ -29,6 +29,7 @@ public class UserData implements Serializable {
 	@Lob
 	private byte[] privateKeyBytes;
 	
+	@Column(unique=true)
 	private String name;
 	
 	public UserData(String name, String password) throws Exception {
@@ -73,7 +74,7 @@ public class UserData implements Serializable {
 		}
 	}
 	
-	public void changePassword(String oldPassword, String newPassword)
+	public void changePassword(String newPassword)
 	{
 		try {
 			

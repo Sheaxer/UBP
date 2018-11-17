@@ -334,7 +334,9 @@ public class CryptoUtils {
 	public static String hashPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException
 	{
 		int iterations = 1000;
-        char[] chars = password.toCharArray();
+        char[] chars = null;
+        if(password != null)
+        	chars = password.toCharArray();
         SecureRandom secureRandom = new SecureRandom();
         byte[] salt = new byte[16];
         secureRandom.nextBytes(salt);
