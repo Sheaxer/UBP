@@ -54,9 +54,9 @@ public class FileUploadHandler extends HttpServlet {
 		System.out.println(UPLOAD_DIRECTORY);
 
 		System.out.println("REQUEST IS =" + request.getContentType().toString());
-
+		String mode = request.getParameter("mode");
 		if (ServletFileUpload.isMultipartContent(request)) {
-			String mode = request.getParameter("mode");
+			
 			Part filePart = request.getPart("fileName");
 			String fileName = Paths.get(getFileName(filePart)).getFileName().toString();
 			if (fileName.isEmpty()) {
@@ -354,42 +354,45 @@ public class FileUploadHandler extends HttpServlet {
 					}
 				}
 				
-			break;
-			case "download":
-				PublicKey publicKey =  DatabaseManager.getPublicKey(id);
-				PrivateKey privateKey = DatabaseManager.getPrivateKey(id);
-				String name = (String) session.getAttribute("name");
-				File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey");
-				File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey");
-				KeyPair keyPair = new KeyPair(publicKey,privateKey);
-				try {
-					CryptoUtils.writeKeyPairToFile(keyPair, publicKeyFile, privateKeyFile);
-					String[] fileNames = {name + ".pubkey", name + ".prkey"};
-					byte[] zip = zipFiles(fileNames);
-					ServletOutputStream sos = response.getOutputStream();
-					response.setContentType("application/zip");
-					response.setHeader("Content-Disposition", "attachment; filename=" + name + "-keys.zip");
-					response.setContentLength(zip.length);
-					sos.write(zip);
-					sos.flush();
-					sos.close();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				finally
-				{
-					if(new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey").exists())
-						new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey").delete();
-					if(new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey").exists())
-						new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey").delete();
-				}
+			
+				
 				
 			}
 
-		} else {
-
+		} else 
+		{
+			System.out.println("I GOT TO DOWNLOAD");
+		
+			PublicKey publicKey =  DatabaseManager.getPublicKey(id);
+			PrivateKey privateKey = DatabaseManager.getPrivateKey(id);
+			String name = (String) session.getAttribute("username");
+			File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey");
+			File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey");
+			KeyPair keyPair = new KeyPair(publicKey,privateKey);
+			try {
+				CryptoUtils.writeKeyPairToFile(keyPair, publicKeyFile, privateKeyFile);
+				String[] fileNames = {name + ".pubkey", name + ".prkey"};
+				byte[] zip = zipFiles(fileNames);
+				ServletOutputStream sos = response.getOutputStream();
+				response.setContentType("application/zip");
+				response.setHeader("Content-Disposition", "attachment; filename=" + name + "-keys.zip");
+				response.setContentLength(zip.length);
+				sos.write(zip);
+				sos.flush();
+				sos.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			finally
+			{
+				if(new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey").exists())
+					new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey").delete();
+				if(new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey").exists())
+					new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey").delete();
+			}
 		}
+			
 
 	}
 
