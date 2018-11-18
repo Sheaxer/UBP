@@ -8,7 +8,17 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.passay.PasswordValidator;
+import org.passay.DictionarySubstringRule;
+import org.passay.PasswordData;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import org.passay.dictionary.WordLists;
+import org.passay.dictionary.WordListDictionary;
+import org.passay.RuleResult;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
+import org.passay.dictionary.ArrayWordList;
 /**
  * Servlet implementation class RegistrationServlet
  */
@@ -48,11 +58,18 @@ public class RegistrationServlet extends HttpServlet {
 		}
 
 		// check if password is legit
-		if( !checkPassword(enteredPassword)) {
-			request.setAttribute("message", "Password must be at least 8 characters long and contain a lowercase letter, an uppercase letter, a number and a non-alphanumeric character.");
+		try {
+			if( !checkPassword(enteredPassword)) {
+				request.setAttribute("message", "Password must be at least 8 characters long and contain a lowercase letter, an uppercase letter, a number and a non-alphanumeric character. It also must not contain easily guessable substrings (like whole words or parts of words)");
+				request.getRequestDispatcher("/register.jsp").forward(request, response);
+				return;
+			}
+		} catch (Exception e) {
+			request.setAttribute("message", "Internal error has occured: " + e.getMessage());
 			request.getRequestDispatcher("/register.jsp").forward(request, response);
 			return;
 		}
+		
 		
 		// TODO Checks for dictionary attacks
 		
@@ -83,7 +100,7 @@ public class RegistrationServlet extends HttpServlet {
 		}
 	}
 
-	private static boolean checkPassword(String pass) {
+	private static boolean checkPassword(String pass) throws FileNotFoundException, IOException {
 		char ch;
 		boolean capitalFlag = false;
 		boolean lowerCaseFlag = false;
@@ -93,6 +110,25 @@ public class RegistrationServlet extends HttpServlet {
 		// check for password length
 		if(pass.length() < 8) {
 			return false;
+		}
+		
+		//check for dictionary passwords
+		
+		try {
+			FileReader fr = new FileReader("/usr/local/apache-tomcat-9.0.12/webapps/UBP/cain.txt"); 
+			FileReader[] frList = {fr};
+			ArrayWordList wl = WordLists.createFromReader(frList);
+			WordListDictionary wld = new WordListDictionary(wl);
+			PasswordValidator passwordValidator = new PasswordValidator(new DictionarySubstringRule(wld));
+			PasswordData passwordData = new PasswordData(pass);
+			RuleResult validate = passwordValidator.validate(passwordData);
+			if(!(validate.isValid())) {
+				return false;
+			}
+		} catch(FileNotFoundException ex) {
+			throw ex;
+		} catch (IOException ex) {
+			throw ex;
 		}
 		
 		// check for character diversity
@@ -111,6 +147,7 @@ public class RegistrationServlet extends HttpServlet {
 			if(numberFlag && capitalFlag && lowerCaseFlag && nonalphanumericFlag)
 				return true;
 		}
+		
 		return false;
 	}
 
