@@ -366,12 +366,14 @@ public class FileUploadHandler extends HttpServlet {
 			PublicKey publicKey =  DatabaseManager.getPublicKey(id);
 			PrivateKey privateKey = DatabaseManager.getPrivateKey(id);
 			String name = (String) session.getAttribute("username");
-			File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey");
-			File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey");
+			File publicKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + "-pubkey.der");
+			File privateKeyFile = new File(UPLOAD_DIRECTORY + File.separator + name + "-prkey.der");
 			KeyPair keyPair = new KeyPair(publicKey,privateKey);
 			try {
 				CryptoUtils.writeKeyPairToFile(keyPair, publicKeyFile, privateKeyFile);
-				String[] fileNames = {name + ".pubkey", name + ".prkey"};
+				//CryptoUtils.writeKeyToFile(publicKey, publicKeyFile);
+				//CryptoUtils.writeKeyToFile(privateKey, privateKeyFile);
+				String[] fileNames = {name + "-pubkey.der", name + "-prkey.der"};
 				byte[] zip = zipFiles(fileNames);
 				ServletOutputStream sos = response.getOutputStream();
 				response.setContentType("application/zip");
@@ -386,10 +388,10 @@ public class FileUploadHandler extends HttpServlet {
 			}
 			finally
 			{
-				if(new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey").exists())
-					new File(UPLOAD_DIRECTORY + File.separator + name + ".pubkey").delete();
-				if(new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey").exists())
-					new File(UPLOAD_DIRECTORY + File.separator + name + ".prkey").delete();
+				if(new File(UPLOAD_DIRECTORY + File.separator + name + "-pubkey.der").exists())
+					new File(UPLOAD_DIRECTORY + File.separator + name + "-pubkey.der").delete();
+				if(new File(UPLOAD_DIRECTORY + File.separator + name + "-prkey.der").exists())
+					new File(UPLOAD_DIRECTORY + File.separator + name + "-prkey.der").delete();
 			}
 		}
 			

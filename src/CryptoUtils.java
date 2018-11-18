@@ -304,6 +304,20 @@ public class CryptoUtils {
 	}
 	
 	
+	public static void writeKeyToFile(PublicKey publicKey, File file) throws IOException
+	{
+		FileOutputStream out = new FileOutputStream(file);
+		out.write(publicKey.getEncoded());
+		out.close();
+	}
+	
+	public static void writeKeyToFile(PrivateKey privateKey, File file) throws IOException
+	{
+		FileOutputStream out = new FileOutputStream(file);
+		out.write(privateKey.getEncoded());
+		out.close();
+	}
+	
 	public static void writeKeyPairToFile(KeyPair keyPair, File publicKey, File privateKey) throws Exception
 	{
 		//String outFile = ...;
