@@ -65,7 +65,7 @@ public class RegistrationServlet extends HttpServlet {
 				return;
 			}
 		} catch (Exception e) {
-			request.setAttribute("message", "Internal error has occured: " + e.getMessage());
+			request.setAttribute("message", "An internal error has occured. We are sorry for your incovenience.");
 			request.getRequestDispatcher("/register.jsp").forward(request, response);
 			return;
 		}
