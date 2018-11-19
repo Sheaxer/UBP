@@ -1,6 +1,14 @@
 
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 import javax.persistence.PersistenceException;
 import javax.servlet.ServletException;
@@ -9,14 +17,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.passay.PasswordValidator;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.eclipse.persistence.sessions.Project;
 import org.passay.DictionarySubstringRule;
 import org.passay.PasswordData;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import org.passay.dictionary.WordLists;
 import org.passay.dictionary.WordListDictionary;
 import org.passay.RuleResult;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import org.passay.dictionary.ArrayWordList;
 /**
@@ -67,6 +79,7 @@ public class RegistrationServlet extends HttpServlet {
 		} catch (Exception e) {
 			request.setAttribute("message", "An internal error has occured. We are sorry for your incovenience.");
 			request.getRequestDispatcher("/register.jsp").forward(request, response);
+			e.printStackTrace();
 			return;
 		}
 		
@@ -115,14 +128,28 @@ public class RegistrationServlet extends HttpServlet {
 		//check for dictionary passwords
 		
 		try {
-			FileReader fr = new FileReader("/usr/local/apache-tomcat-9.0.12/webapps/UBP/cain.txt"); 
-			FileReader[] frList = {fr};
-			ArrayWordList wl = WordLists.createFromReader(frList);
+			InputStream is = RegistrationServlet.class.getResourceAsStream("resources\\cain.txt");
+			
+			String line = null;
+			
+			ArrayList<String> lines = new ArrayList<String>();
+			
+			try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, Charset.forName(StandardCharsets.UTF_8.name())))) {	
+				while ((line = bufferedReader.readLine()) != null) {
+					lines.add(line);
+				}
+			}
+			lines.sort(String::compareToIgnoreCase);
+			String[] linesArray = lines.toArray(new String[0]).clone();
+			
+			ArrayWordList wl = new ArrayWordList(linesArray, false);
 			WordListDictionary wld = new WordListDictionary(wl);
 			PasswordValidator passwordValidator = new PasswordValidator(new DictionarySubstringRule(wld));
 			PasswordData passwordData = new PasswordData(pass);
 			RuleResult validate = passwordValidator.validate(passwordData);
 			if(!(validate.isValid())) {
+				System.out.println(validate.getDetails());
+				System.out.println(validate.getMetadata());
 				return false;
 			}
 		} catch(FileNotFoundException ex) {
