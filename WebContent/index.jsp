@@ -1,31 +1,26 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1" isThreadSafe="false"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<title>Login</title>
 </head>
 <body>
+<%
+// allow access only if session doesn't exists
+if(session.getAttribute("loginHash") != null) {
+	response.sendRedirect("encrypt.jsp");
+}
+%>
 <b>${message}</b>
-<h1>Symmetric Encryption</h1>
-<form  action="Upload" method="post" enctype="multipart/form-data">
-	<input type="file" name="fileName" />
-	<input type="hidden" name="mode" value="encrypt">
-	<input type="hidden" name="cipher" value="symetric">
-	<input type="submit" value="upload" />
+<h1>Login</h1>
+<form action="Login" method="post">
+Username: <input type="text" name="username"><br>
+Password: <input type="password" name="password"><br>
+<input type="submit" value="login" />
 </form>
-
-
-<h1>Asymmetric Encryption</h1>
-<form  action="Upload" method="post" enctype="multipart/form-data">
-	File to encrypt<input type="file" name="fileName" /> <br>
-	Optional public key<input type="file" name="key" />
-	<input type="hidden" name="mode" value="encrypt">
-	<input type="hidden" name="cipher" value="asymetric">
-	<input type="submit" value="upload" />
-</form>
-
-<a href="./decrypt.jsp"> decrypt files</a>
+<br>
+<a href="./register.jsp">register</a>
 </body>
 </html>

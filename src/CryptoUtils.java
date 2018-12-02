@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Writer;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -14,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
@@ -23,12 +25,14 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 
 
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 
 import java.security.interfaces.RSAPrivateKey;
 
@@ -183,7 +187,7 @@ public class CryptoUtils {
 		}
 	}
 	
-	private static KeyPair generateKeyPair() throws Exception
+	public static KeyPair generateKeyPair() throws Exception
 	{
 		KeyPairGenerator gen = KeyPairGenerator.getInstance(KEY_ASYMETRIC_ALGORITHM);
 		gen.initialize(ASYMETRIC_KEY_SIZE);
@@ -228,15 +232,51 @@ public class CryptoUtils {
 		return privateKey;
 	}*/
 	
-	public static PublicKey readPublicKey(File inputFile)
+	public static PublicKey readPublicKey(byte[] inputBytes)
 	{
 		try
 		{
-			byte[] inputBytes = fileToBytes(inputFile);
+			//byte[] inputBytes = fileToBytes(inputFile);
 			X509EncodedKeySpec ks = new X509EncodedKeySpec(inputBytes);
 			KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
 			PublicKey pub = kf.generatePublic(ks);
 			return pub;
+		}
+		catch (Exception e)
+		{
+			error = CryptoErrors.INVALID_ASYMETRIC_KEY;
+			return null;
+		}
+	}
+	
+	public static PublicKey readPublicKey(File inputFile)
+	{
+		
+		try
+		{
+			byte[] inputBytes = fileToBytes(inputFile);
+			//X509EncodedKeySpec ks = new X509EncodedKeySpec(inputBytes);
+			//KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
+			//PublicKey pub = kf.generatePublic(ks);
+			//return pub;
+			return readPublicKey(inputBytes);
+		}
+		catch (Exception e)
+		{
+			error = CryptoErrors.INVALID_ASYMETRIC_KEY;
+			return null;
+		}
+	}
+	
+	public static PrivateKey readPrivateKey (byte[] inputBytes) throws Exception
+	{
+		try
+		{
+			//byte[] inputBytes = fileToBytes(inputFile);
+			PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);
+			KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
+			PrivateKey pvt = kf.generatePrivate(ks);
+			return pvt;
 		}
 		catch (Exception e)
 		{
@@ -250,10 +290,11 @@ public class CryptoUtils {
 		try
 		{
 			byte[] inputBytes = fileToBytes(inputFile);
-			PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);
-			KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
-			PrivateKey pvt = kf.generatePrivate(ks);
-			return pvt;
+			//PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(inputBytes);
+			//KeyFactory kf = KeyFactory.getInstance(KEY_ASYMETRIC_ALGORITHM);
+			//PrivateKey pvt = kf.generatePrivate(ks);
+			//return pvt;
+			return readPrivateKey(inputBytes);
 		}
 		catch (Exception e)
 		{
@@ -262,6 +303,20 @@ public class CryptoUtils {
 		}
 	}
 	
+	
+	public static void writeKeyToFile(PublicKey publicKey, File file) throws IOException
+	{
+		FileOutputStream out = new FileOutputStream(file);
+		out.write(publicKey.getEncoded());
+		out.close();
+	}
+	
+	public static void writeKeyToFile(PrivateKey privateKey, File file) throws IOException
+	{
+		FileOutputStream out = new FileOutputStream(file);
+		out.write(privateKey.getEncoded());
+		out.close();
+	}
 	
 	public static void writeKeyPairToFile(KeyPair keyPair, File publicKey, File privateKey) throws Exception
 	{
@@ -290,6 +345,65 @@ public class CryptoUtils {
 		writer.close();
 	}
 	
+	public static String hashPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException
+	{
+		int iterations = 1000;
+        char[] chars = null;
+        if(password != null)
+        	chars = password.toCharArray();
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] salt = new byte[16];
+        secureRandom.nextBytes(salt);
+         
+        PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+        byte[] hash = skf.generateSecret(spec).getEncoded();
+        return iterations + ":" + toHex(salt) + ":" + toHex(hash);
+		//return null;
+	}
+	
+	
+	private static String toHex(byte[] array) throws NoSuchAlgorithmException
+    {
+        BigInteger bi = new BigInteger(1, array);
+        String hex = bi.toString(16);
+        int paddingLength = (array.length * 2) - hex.length();
+        if(paddingLength > 0)
+        {
+            return String.format("%0"  +paddingLength + "d", 0) + hex;
+        }else{
+            return hex;
+        }
+    }
+	
+	public static boolean validatePassword(String originalPassword, String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException
+    {
+        String[] parts = storedPassword.split(":");
+        int iterations = Integer.parseInt(parts[0]);
+        byte[] salt = fromHex(parts[1]);
+        byte[] hash = fromHex(parts[2]);
+         
+        PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(), salt, iterations, hash.length * 8);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+        byte[] testHash = skf.generateSecret(spec).getEncoded();
+         
+        int diff = hash.length ^ testHash.length;
+        for(int i = 0; i < hash.length && i < testHash.length; i++)
+        {
+            diff |= hash[i] ^ testHash[i];
+        }
+        return diff == 0;
+    }
+	
+	private static byte[] fromHex(String hex) throws NoSuchAlgorithmException
+    {
+        byte[] bytes = new byte[hex.length() / 2];
+        for(int i = 0; i<bytes.length ;i++)
+        {
+            bytes[i] = (byte)Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
+        }
+        return bytes;
+    }
 	
 	
 }
