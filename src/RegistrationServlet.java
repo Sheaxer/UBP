@@ -128,7 +128,7 @@ public class RegistrationServlet extends HttpServlet {
 		//check for dictionary passwords
 		
 		try {
-			InputStream is = RegistrationServlet.class.getResourceAsStream("resources/cain.txt");
+			InputStream is = RegistrationServlet.class.getResourceAsStream("resources" + File.separator+"cain.txt");
 			
 			String line = null;
 			

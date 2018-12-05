@@ -122,7 +122,7 @@ public class CryptoUtils {
 	
 	
 	
-	private static byte[]  fileToBytes(File inputFile) throws Exception
+	public static byte[]  fileToBytes(File inputFile) throws Exception
 	{
 		try {
 			FileInputStream in = new FileInputStream(inputFile);
