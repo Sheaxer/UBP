@@ -58,7 +58,7 @@ public class LoginServlet extends HttpServlet {
 			session.setMaxInactiveInterval(5*60); // 5 min
 			
 			// redirect to encryption
-			response.sendRedirect(response.encodeRedirectURL("encrypt.jsp"));
+			response.sendRedirect(response.encodeRedirectURL("users.jsp"));
 			return;
 		}
 		else {
