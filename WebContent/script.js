@@ -93,7 +93,9 @@ $(document).ready(function()
 		 $("#filesForMe").append(table);
 		});
 		$("#getCommentsButton").click(function(){
-			$.post("./userSection", {mode: "comments", createTime: selected.createTime, creatorName: selected.creatorName}).done(function (data){
+			var data = {mode: "comments", createTime: selected.createTime, creatorName: selected.creatorName};
+			console.log(data.createTime);
+			$.post("./userSection", data).done(function (data){
 				$("#commentSection").empty();
 				var commentsData = JSON.parse(data);
 				$.each(commentsData, function(index,value){

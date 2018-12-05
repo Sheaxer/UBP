@@ -179,8 +179,8 @@ public class UserHandler extends HttpServlet {
 			resp.sendRedirect("users.jsp");
 			break;
 		case "decrypt":
-			createTime = OffsetDateTime.parse((String) req.getAttribute("createTime"));
-			creatorName =(String) req.getAttribute("creatorName");
+			createTime = OffsetDateTime.parse(req.getParameter("createTime"));
+			creatorName = req.getParameter("creatorName");
 			creatorId = DatabaseManager.getUserIdFromName(creatorName);
 			c = new Creator();
 			c.createTime=createTime;
@@ -240,8 +240,11 @@ public class UserHandler extends HttpServlet {
 			}
 			break;
 		case "comments":
-			createTime = OffsetDateTime.parse((String) req.getAttribute("createTime"));
-			creatorName =(String) req.getAttribute("creatorName");
+			//System.out.println("Mode is " + ((String) req.getAttribute("mode")));
+			creatorName = req.getParameter("creatorName");
+			
+			createTime = OffsetDateTime.parse( req.getParameter("createTime"));
+			
 			creatorId = DatabaseManager.getUserIdFromName(creatorName);
 			c = new Creator();
 			c.createTime=createTime;
@@ -262,7 +265,9 @@ public class UserHandler extends HttpServlet {
 				
 				respBuilder.add(objBuilder.build());
 			}
-			resp.getWriter().write(respBuilder.build().toString());
+			String responseJSON = respBuilder.build().toString();
+			System.out.println("Comments are ? " + responseJSON);
+			resp.getWriter().write(responseJSON);
 			break;
 		case "addComment":
 			createTime = OffsetDateTime.parse((String) req.getAttribute("createTime"));

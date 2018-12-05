@@ -20,14 +20,14 @@ else {
 	user = (String) session.getAttribute("username");
 }
 %>
-<p>Welcome <span id="myName"> <%=user %> </span></p>
+<p>Welcome <span id="myName"><%=user %></span></p>
 <section id="userSection"></section>
 <section id="filesFromMe"></section>
 <form id="decryptForm" enctype="multipart/form-data"></form>
 <section id="filesForMe"></section>
 
 <section id="commentSection"></section>
-<button id="getCommentsButton" value="Get comments for last clicked file"></button>
+<button id="getCommentsButton">Get comments for last clicked file</button>
 <section id="encryptSection">
 <form id="encryptForm">
 File <input type="file" name="fileName" /> <br>
@@ -35,7 +35,7 @@ File <input type="file" name="fileName" /> <br>
 </form>
 </section>
 <form id="decryptForm">
-<input type="submit" value="Decrypt" />
+<input type="submit" value="Decrypt last selected file for you" />
 </form>
 </body>
 </html>
