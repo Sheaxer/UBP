@@ -28,6 +28,10 @@ else {
 
 <section id="commentSection"></section>
 <button id="getCommentsButton">Get comments for last clicked file</button>
+<form id="addCommentForm">
+<textarea name="message" rows="20" cols="50"></textarea>
+<input type="submit" value="Add Comment to the last clicked file" />
+</form>
 <section id="encryptSection">
 <form id="encryptForm">
 File <input type="file" name="fileName" /> <br>

@@ -257,7 +257,7 @@ public class UserHandler extends HttpServlet {
 			{
 				Long uId = comment.getCreatorId();
 				JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-				objBuilder.add("date", comment.getCreateTime().toString());
+				objBuilder.add("createTime", comment.getCreateTime().toString());
 				objBuilder.add("message", comment.getMessage());
 				if(!idMap.containsKey(uId))
 					idMap.put(uId, DatabaseManager.getUserNameFromId(uId));
@@ -270,13 +270,16 @@ public class UserHandler extends HttpServlet {
 			resp.getWriter().write(responseJSON);
 			break;
 		case "addComment":
-			createTime = OffsetDateTime.parse((String) req.getAttribute("createTime"));
-			creatorName =(String) req.getAttribute("creatorName");
+			createTime = OffsetDateTime.parse( req.getParameter("createTime"));
+			creatorName = req.getParameter("creatorName");
 			creatorId = DatabaseManager.getUserIdFromName(creatorName);
+			String message =  req.getParameter("message");
+			System.out.println("Date is " + createTime.toString()+ "\nName is " + creatorName + "\nMessage is:\n" + message);
+			
 			c = new Creator();
 			c.createTime=createTime;
 			c.creatorId = creatorId;
-			String message = (String) req.getAttribute("message");
+			
 			DatabaseManager.addComment(c,id,message);
 		}
 		

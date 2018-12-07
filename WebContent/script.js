@@ -101,8 +101,9 @@ $(document).ready(function()
 				$.each(commentsData, function(index,value){
 					var article = $("<article>");
 					article.append($("<h1>").text(value.creator));
-					article.append($("<h2>").text(value.message));
+					article.append($("<h2>").text(value.createTime));
 					article.append($("<p>").text(value.message));
+					$("#commentSection").append(article);
 				});
 			});
 		});
@@ -138,7 +139,7 @@ $(document).ready(function()
 			
 		});
 		$("#decryptForm").submit(function(event){
-			 $(":hidden").remove();
+			 $("input:hidden").remove();
 			if((clicked == false) || (forMe == false))
 			{
 				event.preventDefault();
@@ -159,4 +160,45 @@ $(document).ready(function()
 	          .appendTo('#decryptForm');
 			return true;
 		});
+		
+		$("#addCommentForm").submit(function(event){
+			event.preventDefault();
+			$("input:hidden").remove();
+			if(clicked == false) {
+				alert("You must select a file");
+				return;
+			}
+			$('<input />').attr('type', 'hidden')
+	          .attr('name', "mode")
+	          .attr('value', "addComment")
+	          .appendTo('#addCommentForm');
+			$('<input />').attr('type', 'hidden')
+	          .attr('name', "createTime")
+	          .attr('value', selected.createTime)
+	          .appendTo('#addCommentForm');
+			$('<input />').attr('type', 'hidden')
+	          .attr('name', "creatorName")
+	          .attr('value', selected.creatorName)
+	          .appendTo('#addCommentForm');
+			
+			var formData = new FormData($('#addCommentForm')[0]);
+			$.ajax({
+				type: "POST",
+				url: "./userSection",
+				cache       : false,
+		        contentType : false,
+		        processData : false,
+		        data :		 formData,
+		        success     : function(data, textStatus, jqXHR){
+		            // Callback code
+		        	var article = $("<article>");
+					article.append($("<h1>").text(formData.get('creatorName')));
+					article.append($("<h2>").text(formData.get('createTime')));
+					article.append($("<p>").text(formData.get('message')));
+					$("#commentSection").append(article);
+		        	$("#addCommentForm textarea").val('');
+		        }
+			});
+		});
+		
 	})
