@@ -52,7 +52,7 @@ public class UserHandler extends HttpServlet {
 		}
 		String loginHash = (String) session.getAttribute("loginHash");
 		Long id = DatabaseManager.getUserIdFromHash(loginHash);
-		System.out.println("My id is" + id);
+		//System.out.println("My id is" + id);
 		List<String> otherUsers = DatabaseManager.getOtherUsers(id);
 		JsonObjectBuilder responseBuilder = Json.createObjectBuilder();
 		
@@ -62,7 +62,7 @@ public class UserHandler extends HttpServlet {
 		
 		for(String userName: otherUsers)
 		{
-			System.out.println("Other name is" + userName);
+			//System.out.println("Other name is" + userName);
 			userBuilder.add(userName);
 		}
 		//System.out.println("JSON = " + userBuilder.build().toString());
