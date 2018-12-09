@@ -148,8 +148,8 @@ public class RegistrationServlet extends HttpServlet {
 			PasswordData passwordData = new PasswordData(pass);
 			RuleResult validate = passwordValidator.validate(passwordData);
 			if(!(validate.isValid())) {
-				System.out.println(validate.getDetails());
-				System.out.println(validate.getMetadata());
+				//System.out.println(validate.getDetails());
+				//System.out.println(validate.getMetadata());
 				return false;
 			}
 		} catch(FileNotFoundException ex) {

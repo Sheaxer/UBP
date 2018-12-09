@@ -39,7 +39,7 @@ $(document).ready(function()
 			 		var row = $('<tr>');
 			 		var field =$('<td>').text( value.recipientName);
 			 		row.append(field);
-			 		field= $('<td>').text(value.createDate);
+			 		field= $('<td>').text(value.createTime);
 			 		//console.log(value.createDate);
 			 		row.append(field);
 			 		field = $('<td>').text(value.name);
@@ -75,6 +75,7 @@ $(document).ready(function()
 			 		row.append(field);
 			 		field = $('<td>').text(data.createTime);
 			 		row.append(field);
+			 		console.log(data.createTime);
 			 		field = $('<td>').text(data.name);
 			 		row.append(field);
 			 		row.click(function()
@@ -85,6 +86,19 @@ $(document).ready(function()
 			 					forMe = true;
 			 					clicked = true;
 			 					console.log(selected);
+			 					$("input:hidden").remove();
+			 					$('<input />').attr('type', 'hidden')
+			 			          .attr('name', "mode")
+			 			          .attr('value', "decrypt")
+			 			          .appendTo('#decryptForm');
+			 					$('<input />').attr('type', 'hidden')
+			 			          .attr('name', "createTime")
+			 			          .attr('value', selected.createTime)
+			 			          .appendTo('#decryptForm');
+			 					$('<input />').attr('type', 'hidden')
+			 			          .attr('name', "creatorName")
+			 			          .attr('value', selected.creatorName)
+			 			          .appendTo('#decryptForm');
 			 				});
 			 		table.append(row);
 				 });
@@ -110,7 +124,7 @@ $(document).ready(function()
 		
 		$("#encryptForm").submit(function(eventObj){
 			eventObj.preventDefault();
-			 $(":hidden").remove();
+			 $("input:hidden").remove();
 			if(selectedUser === "")
 			{
 				alert("You must select a user to encrypt for")
@@ -138,7 +152,7 @@ $(document).ready(function()
 			});
 			
 		});
-		$("#decryptForm").submit(function(event){
+		/*$("#decryptForm").submit(function(event){
 			 $("input:hidden").remove();
 			if((clicked == false) || (forMe == false))
 			{
@@ -146,20 +160,9 @@ $(document).ready(function()
 				alert("You must select a file that was encrypted for you");
 				return false;
 			}
-			$('<input />').attr('type', 'hidden')
-	          .attr('name', "mode")
-	          .attr('value', "decrypt")
-	          .appendTo('#decryptForm');
-			$('<input />').attr('type', 'hidden')
-	          .attr('name', "createTime")
-	          .attr('value', selected.createTime)
-	          .appendTo('#decryptForm');
-			$('<input />').attr('type', 'hidden')
-	          .attr('name', "creatorName")
-	          .attr('value', selected.creatorName)
-	          .appendTo('#decryptForm');
+			
 			return true;
-		});
+		});*/
 		
 		$("#addCommentForm").submit(function(event){
 			event.preventDefault();

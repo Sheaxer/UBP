@@ -184,7 +184,7 @@ public class DatabaseManager {
 			TypedQuery<String> q1 = em.createQuery("SELECT u.name FROM UserData u WHERE u.id=:b",String.class);
 			q1.setParameter("b", userList.get(i).getRecipient());
 			String name = q1.getSingleResult();
-			System.out.println("WE HAVE ONE JOB " + name + " " + userList.get(i).getCreator().createTime.toString() + " " + userList.get(i).getFileName());
+			//System.out.println("WE HAVE ONE JOB " + name + " " + userList.get(i).getCreator().createTime.toString() + " " + userList.get(i).getFileName());
 			o[0] = name;
 			o[1] = userList.get(i).getCreator().createTime;
 			o[2] = userList.get(i).getFileName();

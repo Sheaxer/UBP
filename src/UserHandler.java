@@ -75,11 +75,11 @@ public class UserHandler extends HttpServlet {
 			
 			JsonObjectBuilder fileInfoBuilder = Json.createObjectBuilder();
 			fileInfoBuilder.add("recipientName", (String)fileInfo[0]);
-			fileInfoBuilder.add("createDate", ((OffsetDateTime)fileInfo[1]).toString());
+			fileInfoBuilder.add("createTime", ((OffsetDateTime)fileInfo[1]).toString());
 			fileInfoBuilder.add("name", (String)fileInfo[2]);
 			fileOfUserBuilder.add(fileInfoBuilder);
-			System.out.println("I MA HERE");
-			System.out.println((String)fileInfo[0]);
+			//System.out.println("I MA HERE");
+			//System.out.println((String)fileInfo[0]);
 		}
 		
 		JsonArrayBuilder fileForUserBuilder = Json.createArrayBuilder();
@@ -90,11 +90,11 @@ public class UserHandler extends HttpServlet {
 		{
 			JsonObjectBuilder fileInfoBuilder = Json.createObjectBuilder();
 			fileInfoBuilder.add("creatorName", (String)fileInfo[0]);
-			fileInfoBuilder.add("createDate", ((OffsetDateTime) fileInfo[1]).toString());
+			fileInfoBuilder.add("createTime", ((OffsetDateTime) fileInfo[1]).toString());
 			fileInfoBuilder.add("name", (String)fileInfo[2]);
 			fileForUserBuilder.add(fileInfoBuilder);
-			System.out.println("I MA HERE");
-			System.out.println((String)fileInfo[0]);
+			//System.out.println("I MA HERE");
+			//System.out.println((String)fileInfo[0]);
 		}
 		
 		responseBuilder.add("otherUsers", userBuilder);
@@ -179,6 +179,7 @@ public class UserHandler extends HttpServlet {
 			resp.sendRedirect("users.jsp");
 			break;
 		case "decrypt":
+			//System.out.println("Decrypting");
 			createTime = OffsetDateTime.parse(req.getParameter("createTime"));
 			creatorName = req.getParameter("creatorName");
 			creatorId = DatabaseManager.getUserIdFromName(creatorName);
@@ -200,6 +201,7 @@ public class UserHandler extends HttpServlet {
 			byte[] fileBytes = DatabaseManager.getFileContent(c);
 			PrivateKey privateKey = DatabaseManager.getPrivateKey(id);
 			fileName = DatabaseManager.getFileName(c);
+			//System.out.println("Filename is= " + fileName);
 			try 
 			{
 				//FileUtils.writeByteArrayToFile(new File("pathname"), fileBytes);
@@ -215,6 +217,7 @@ public class UserHandler extends HttpServlet {
 				ServletOutputStream sos = resp.getOutputStream();
 				//decrypted = new File(UPLOAD_DIRECTORY + File.separator + decryptFileName);
 				resp.setContentLength((int) outputFile.length());
+				resp.setHeader("Content-disposition", "attachment; filename=" + fileName);
 				FileInputStream in = new FileInputStream(outputFile);
 				byte[] buffer = new byte[4096];
 				int bytesRead = -1;
@@ -266,7 +269,7 @@ public class UserHandler extends HttpServlet {
 				respBuilder.add(objBuilder.build());
 			}
 			String responseJSON = respBuilder.build().toString();
-			System.out.println("Comments are ? " + responseJSON);
+			//System.out.println("Comments are ? " + responseJSON);
 			resp.getWriter().write(responseJSON);
 			break;
 		case "addComment":

@@ -23,9 +23,10 @@ else {
 <p>Welcome <span id="myName"><%=user %></span></p>
 <section id="userSection"></section>
 <section id="filesFromMe"></section>
-<form id="decryptForm" enctype="multipart/form-data"></form>
-<section id="filesForMe"></section>
 
+<section id="filesForMe"></section>
+<form id="decryptForm" method="POST" action="./userSection">
+<input type="submit" value="Decrypt last selected file for you" /></form>
 <section id="commentSection"></section>
 <button id="getCommentsButton">Get comments for last clicked file</button>
 <form id="addCommentForm">
@@ -38,8 +39,7 @@ File <input type="file" name="fileName" /> <br>
 <input type="submit" value="Encrypt" />
 </form>
 </section>
-<form id="decryptForm">
-<input type="submit" value="Decrypt last selected file for you" />
-</form>
+<form action="Logout" method="post">
+	<input type="submit" value="logout" />
 </body>
 </html>
