@@ -18,6 +18,7 @@ else {
 	user = (String) session.getAttribute("username");
 }
 %>
+<br><br>
 <div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px">
 <b>${message}</b><br>
 <p>Welcome <%=user %></p>

@@ -14,6 +14,7 @@ if(session.getAttribute("username") != null) {
 	response.sendRedirect("encrypt.jsp");
 }
 %>
+<br><br>
 <div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px">
 <b>${message}</b>
 <h1>Registration</h1>
