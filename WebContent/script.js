@@ -143,6 +143,30 @@ $(document).ready(function()
 		        data :		 formData,
 		        success     : function(data, textStatus, jqXHR){
 		            // Callback code
+		        	console.log(data);
+		        	data2 = JSON.parse(data);
+		        	var table = $("#filesFromMe table");
+		        	var row = $('<tr>');
+			 		var field =$('<td>').text( data2.recipient);
+			 		row.append(field);
+			 		field= $('<td>').text(data2.createTime);
+			 		//console.log(value.createDate);
+			 		row.append(field);
+			 		field = $('<td>').text(data2.fileName);
+			 		row.append(field);
+			 		row.click(function()
+			 		{
+	 					//selected.creatorName = $(this).find('td:first').text();
+			 			selected.creatorName=$("#myName").text();
+			 			console.log(selected.creatorName);
+	 					selected.createTime = $(this).find('td:nth-child(2)').text();
+	 					selected.name = $(this).find('td:nth-child(3)').text();
+	 					console.log(selected);
+	 					forMe = false;
+	 					clicked = true;
+			 					
+			 		});
+			 		table.append(row);
 		        }
 			});
 			

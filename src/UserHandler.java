@@ -163,8 +163,16 @@ public class UserHandler extends HttpServlet {
 				outputFile = new File(DIR + File.separator + fileName + ".enc");
 				byte[] outputFileBytes  = CryptoUtils.fileToBytes(outputFile);
 				
-				DatabaseManager.addNewUserFile(id, recipientId, fileName,outputFileBytes);
-				
+				OffsetDateTime t=DatabaseManager.addNewUserFile(id, recipientId, fileName,outputFileBytes);
+				PrintWriter out = resp.getWriter();
+				JsonObjectBuilder b = Json.createObjectBuilder();
+				b.add("recipient", recipient);
+				b.add("createTime", t.toString());
+				b.add("fileName", fileName);
+				String r = b.build().toString();
+				out.println(r);
+				out.flush();
+				out.close();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -176,7 +184,8 @@ public class UserHandler extends HttpServlet {
 				if((new File(DIR + File.separator + fileName + ".enc")).exists())
 					(new File(DIR + File.separator + fileName + ".enc")).delete();
 			}
-			resp.sendRedirect("users.jsp");
+			
+			//resp.sendRedirect("users.jsp");
 			break;
 		case "decrypt":
 			//System.out.println("Decrypting");

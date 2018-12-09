@@ -219,7 +219,7 @@ public class DatabaseManager {
 		return retList;
 	}
 	
-	public static void addNewUserFile(Long creatorId, Long recipientId, String fileName, byte[] fileBytes)
+	public static OffsetDateTime addNewUserFile(Long creatorId, Long recipientId, String fileName, byte[] fileBytes)
 	{
 		EntityManager em=emf.createEntityManager();
 		UserFile u= new UserFile();
@@ -231,6 +231,7 @@ public class DatabaseManager {
 		em.persist(u);
 		em.getTransaction().commit();
 		em.close();
+		return(u.getCreator().createTime);
 	}
 	
 	public static byte[] getFileContent(Creator c)
