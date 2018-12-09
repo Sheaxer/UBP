@@ -10,7 +10,7 @@
 <%
 // allow access only if session doesn't exists
 if(session.getAttribute("loginHash") != null) {
-	response.sendRedirect("encrypt.jsp");
+	response.sendRedirect("users.jsp");
 }
 %>
 <b>${message}</b>
