@@ -8,20 +8,10 @@
 <link rel="stylesheet" href="bootstrap.css">
 </head>
 <body>
-<%
-// allow access only if session exists
-String user = null;
-if(session.getAttribute("loginHash") == null) {
-	response.sendRedirect("index.jsp");
-}
-else {
-	user = (String) session.getAttribute("username");
-}
-%>
+
 <br><br>
 <div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px">
 <b>${message}</b><br>
-<p>Welcome <%=user %></p>
 <h1>Symmetric decryption</h1>
 <form action="Upload" method="post" enctype="multipart/form-data">
 
@@ -31,7 +21,7 @@ Decryption key: <input type="file" name="key" /> <br>
 <input type="hidden" name="cipher" value="symetric">
 <input type="submit" class="btn btn-primary" value="download" />
 </form>
-</div>
+</div><br>
 <div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px">
 <h1>Asymmetric decryption</h1>
 <form action="Upload" method="post" enctype="multipart/form-data">
@@ -42,7 +32,7 @@ File to decrypt: <input type="file" name="fileName" /> <br>
 <input type="hidden" name="cipher" value="asymetric">
 <input type="submit" class="btn btn-primary" value="download" />
 </form>
-</div>
+</div><br>
 <div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px">
 <h1>Download asymetric keys</h1>
 <form action="Upload" method="post">
