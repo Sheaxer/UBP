@@ -310,13 +310,16 @@ public class UserHandler extends HttpServlet {
 			creatorName = req.getParameter("creatorName");
 			creatorId = DatabaseManager.getUserIdFromName(creatorName);
 			String message =  req.getParameter("message");
-			System.out.println("Date is " + createTime.toString()+ "\nName is " + creatorName + "\nMessage is:\n" + message);
+			//System.out.println("Date is " + createTime.toString()+ "\nName is " + creatorName + "\nMessage is:\n" + message);
 			
 			c = new Creator();
 			c.createTime=createTime;
 			c.creatorId = creatorId;
 			
-			DatabaseManager.addComment(c,id,message);
+			OffsetDateTime o=DatabaseManager.addComment(c,id,message);
+			PrintWriter pr = resp.getWriter();
+			pr.println(o.toString());
+			pr.close();
 		}
 		
 		
