@@ -27,6 +27,8 @@ else {
 <section id="filesForMe"></section>
 <form id="decryptForm" method="POST" action="./userSection">
 <input type="submit" value="Decrypt last selected file for you" /></form>
+<form id="downloadForm" method="POST" action="./userSection">
+<input type="submit" value="Download Last selected file for you still encrypted" /></form>
 <section id="commentSection"></section>
 <button id="getCommentsButton">Get comments for last clicked file</button>
 <form id="addCommentForm">

@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
@@ -250,6 +251,29 @@ public class UserHandler extends HttpServlet {
 					(new File(DIR + File.separator + fileName)).delete();
 						
 			}
+			break;
+		case "download":
+			createTime = OffsetDateTime.parse(req.getParameter("createTime"));
+			creatorName = req.getParameter("creatorName");
+			creatorId = DatabaseManager.getUserIdFromName(creatorName);
+			c = new Creator();
+			c.createTime=createTime;
+			c.creatorId = creatorId;
+			check = DatabaseManager.checkIfFileIsForUser(c, id);
+			if(!check)
+			{
+				req.setAttribute("message", "Selected file is not for user");
+				req.getRequestDispatcher("/users.jsp").forward(req, resp);
+				return;
+			}
+			fileBytes = DatabaseManager.getFileContent(c);
+			fileName = DatabaseManager.getFileName(c);
+			resp.setContentLength((int) fileBytes.length);
+			resp.setHeader("Content-disposition", "attachment; filename=" + fileName);
+			OutputStream output = resp.getOutputStream();
+		    output.write(fileBytes);
+		    output.close();
+			
 			break;
 		case "comments":
 			//System.out.println("Mode is " + ((String) req.getAttribute("mode")));

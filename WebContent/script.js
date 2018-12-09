@@ -99,6 +99,21 @@ $(document).ready(function()
 			 			          .attr('name', "creatorName")
 			 			          .attr('value', selected.creatorName)
 			 			          .appendTo('#decryptForm');
+			 					
+			 					$("#downloadForm input:hidden").remove();
+			 					$('<input />').attr('type', 'hidden')
+			 			          .attr('name', "mode")
+			 			          .attr('value', "download")
+			 			          .appendTo('#downloadForm');
+			 					$('<input />').attr('type', 'hidden')
+			 			          .attr('name', "createTime")
+			 			          .attr('value', selected.createTime)
+			 			          .appendTo('#downloadForm');
+			 					$('<input />').attr('type', 'hidden')
+			 			          .attr('name', "creatorName")
+			 			          .attr('value', selected.creatorName)
+			 			          .appendTo('#downloadForm');
+			 					
 			 				});
 			 		table.append(row);
 				 });
