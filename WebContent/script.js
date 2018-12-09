@@ -86,7 +86,7 @@ $(document).ready(function()
 			 					forMe = true;
 			 					clicked = true;
 			 					console.log(selected);
-			 					$("input:hidden").remove();
+			 					$("#decryptForm input:hidden").remove();
 			 					$('<input />').attr('type', 'hidden')
 			 			          .attr('name', "mode")
 			 			          .attr('value', "decrypt")
@@ -124,20 +124,15 @@ $(document).ready(function()
 		
 		$("#encryptForm").submit(function(eventObj){
 			eventObj.preventDefault();
-			 $("input:hidden").remove();
-			if(selectedUser === "")
-			{
-				alert("You must select a user to encrypt for")
-				return;
-			}
-			$('<input />').attr('type', 'hidden')
-	          .attr('name', "mode")
-	          .attr('value', "encrypt")
-	          .appendTo('#encryptForm');
-			$('<input />').attr('type', 'hidden')
-	          .attr('name', "recipient")
-	          .attr('value', selectedUser)
-	          .appendTo('#encryptForm');
+			 $("#encryptForm input:hidden").remove();
+				$('<input />').attr('type', 'hidden')
+		          .attr('name', "mode")
+		          .attr('value', "encrypt")
+		          .appendTo('#encryptForm');
+				$('<input />').attr('type', 'hidden')
+		          .attr('name', "recipient")
+		          .attr('value', selectedUser)
+		          .appendTo('#encryptForm');
 			var formData = new FormData($('#encryptForm')[0]);
 			$.ajax({
 				type: "POST",
@@ -166,7 +161,7 @@ $(document).ready(function()
 		
 		$("#addCommentForm").submit(function(event){
 			event.preventDefault();
-			$("input:hidden").remove();
+			$("#addCommentForm input:hidden").remove();
 			if(clicked == false) {
 				alert("You must select a file");
 				return;
