@@ -47,7 +47,10 @@ File <input type="file" name="fileName" /> <br>
 <input type="submit" value="Encrypt" class="btn btn-primary"/>
 </form>
 </section> </div> <br>
+<div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px">
 <form action="Logout" method="post">
 	<input type="submit" value="logout" class="btn btn-primary"/>
+</form>
+</div>
 </body>
 </html>
