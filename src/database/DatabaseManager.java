@@ -292,7 +292,7 @@ public class DatabaseManager {
 		return u.getComments();
 	}
 
-	public static OffsetDateTime addComment(Creator c, Long id, String message) {
+	public static Comment addComment(Creator c, Long id, String message) {
 		// TODO Auto-generated method stub
 		EntityManager em=emf.createEntityManager();
 		UserFile u = em.find(UserFile.class, c);
@@ -305,6 +305,6 @@ public class DatabaseManager {
 		u.addComment(com);
 		em.getTransaction().commit();
 		em.close();
-		return com.getCreateTime();
+		return com;
 	}
 }

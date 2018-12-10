@@ -230,10 +230,11 @@ $(document).ready(function()
 		        success     : function(data, textStatus, jqXHR){
 		            // Callback code
 		        	console.log(data);
+		        	var d = JSON.parse(data);
 		        	var article = $("<article>");
 					article.append($("<h1>").text(formData.get('creatorName')));
-					article.append($("<h2>").text(data));
-					article.append($("<p>").text(formData.get('message')));
+					article.append($("<h2>").text(d.createTime));
+					article.append($("<p>").text(d.message));
 					$("#commentSection").append(article);
 		        	$("#addCommentForm textarea").val('');
 		        }

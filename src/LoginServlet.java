@@ -8,6 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
+
 import database.DatabaseManager;
 
 /**
@@ -30,7 +33,8 @@ public class LoginServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// get user credentials
-		String username = request.getParameter("username");
+		String unsafeUsername = request.getParameter("username");
+		String username = Jsoup.clean(unsafeUsername, Whitelist.none());
 		String enteredPassword = request.getParameter("password");
 		
 		if(username.equals("") || enteredPassword.equals("")) {

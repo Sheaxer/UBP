@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.passay.PasswordValidator;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.eclipse.persistence.sessions.Project;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.passay.DictionarySubstringRule;
 import org.passay.PasswordData;
 import java.io.FileWriter;
@@ -56,7 +58,8 @@ public class RegistrationServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// get registration credentials
-		String username = request.getParameter("username");
+		String unsafeusername = request.getParameter("username");
+		String username = Jsoup.clean(unsafeusername, Whitelist.none());
 		String enteredPassword = request.getParameter("password");
 		String repeatPassword = request.getParameter("passwordRepeat");
 		

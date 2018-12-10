@@ -29,6 +29,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
+
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 @WebServlet("/userSection")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 10 // 500 MB
 //2 GB
@@ -326,16 +329,21 @@ public class UserHandler extends HttpServlet {
 			createTime = OffsetDateTime.parse( req.getParameter("createTime"));
 			creatorName = req.getParameter("creatorName");
 			creatorId = DatabaseManager.getUserIdFromName(creatorName);
-			String message =  req.getParameter("message");
+			String unsafeMessage =  req.getParameter("message");
+			String message = Jsoup.clean(unsafeMessage,Whitelist.simpleText());
 			//System.out.println("Date is " + createTime.toString()+ "\nName is " + creatorName + "\nMessage is:\n" + message);
 			
 			c = new Creator();
 			c.createTime=createTime;
 			c.creatorId = creatorId;
 			
-			OffsetDateTime o=DatabaseManager.addComment(c,id,message);
+			Comment o=DatabaseManager.addComment(c,id,message);
+			JsonObjectBuilder comBuilder = Json.createObjectBuilder();
+			comBuilder.add("createTime", o.getCreateTime().toString());
+			comBuilder.add("message", o.getMessage());
+			String r = comBuilder.build().toString();
 			PrintWriter pr = resp.getWriter();
-			pr.println(o.toString());
+			pr.println(r);
 			pr.close();
 		}
 		
