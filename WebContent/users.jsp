@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
+<%@ page import="database.DatabaseManager" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,13 +13,19 @@
 </head>
 <body>
 <%
-// allow access only if session exists
+	// allow access only if session exists
+
 String user = null;
 if(session.getAttribute("loginHash") == null) {
 	response.sendRedirect("index.jsp");
 }
 else {
-	user = (String) session.getAttribute("username");
+	Long id= database.DatabaseManager.getUserIdFromHash((String)session.getAttribute("loginHash"));
+	if(id == null)
+		response.sendRedirect("index.jsp");
+	else
+		user = database.DatabaseManager.getUserNameFromId(id);
+	//user = (String) session.getAttribute("username");
 }
 %>
 <div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px"><p><h1>Welcome <span id="myName"><%=user %></span></h1></p></div>

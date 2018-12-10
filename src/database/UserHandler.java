@@ -1,3 +1,4 @@
+package database;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,9 +51,15 @@ public class UserHandler extends HttpServlet {
 		if(session == null)
 		{
 			resp.sendRedirect("index.jsp");
+			return;
 		}
 		String loginHash = (String) session.getAttribute("loginHash");
 		Long id = DatabaseManager.getUserIdFromHash(loginHash);
+		if(id == null)
+		{
+			resp.sendRedirect("index.jsp");
+			return;
+		}
 		//System.out.println("My id is" + id);
 		List<String> otherUsers = DatabaseManager.getOtherUsers(id);
 		JsonObjectBuilder responseBuilder = Json.createObjectBuilder();
@@ -126,7 +133,17 @@ public class UserHandler extends HttpServlet {
 			return;
 		}
 		String loginHash = (String) session.getAttribute("loginHash");
+		if(loginHash == null)
+		{
+			resp.sendRedirect("index.jsp");
+			return;
+		}
 		Long id = DatabaseManager.getUserIdFromHash(loginHash);
+		if(id == null)
+		{
+			resp.sendRedirect("index.jsp");
+			return;
+		}
 		
 		
 		

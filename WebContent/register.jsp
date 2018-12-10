@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
+<%@ page import="database.DatabaseManager" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,8 +11,10 @@
 <body>
 <%
 // allow access only if session doesn't exists
-if(session.getAttribute("username") != null) {
-	response.sendRedirect("encrypt.jsp");
+if(session.getAttribute("loginHash") != null) {
+	Long id = DatabaseManager.getUserIdFromHash((String) session.getAttribute("loginHash"));
+	if(id != null)
+		response.sendRedirect("users.jsp");
 }
 %>
 <br><br>

@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import database.DatabaseManager;
+
 /**
  * Servlet implementation class LoginServlet
  */
@@ -51,7 +53,7 @@ public class LoginServlet extends HttpServlet {
 		if(id != null) {
 			// login the user
 			HttpSession session = request.getSession(); // create a session
-			session.setAttribute("username", username);
+			//session.setAttribute("username", username);
 			String loginHash = DatabaseManager.logInUser(id);
 			session.setAttribute("loginHash", loginHash);
 			

@@ -8,7 +8,16 @@
 <link rel="stylesheet" href="bootstrap.css">
 </head>
 <body>
-
+<%
+// allow access only if session exists
+String user = null;
+if(session.getAttribute("loginHash") == null) {
+	response.sendRedirect("index.jsp");
+}
+else {
+	user = (String) session.getAttribute("username");
+}
+%>
 <br><br>
 <div class="container" style="background-color:rgb(200, 255, 255); border-radius:5px">
 <b>${message}</b><br>

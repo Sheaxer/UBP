@@ -25,6 +25,9 @@ import javax.servlet.http.Part;
 
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
+import database.CryptoUtils;
+import database.DatabaseManager;
+
 @WebServlet("/Upload")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 10 // 500 MB
 // 2 GB
@@ -49,7 +52,17 @@ public class FileUploadHandler extends HttpServlet {
 			return;
 		}
 		String loginHash = (String) session.getAttribute("loginHash");
+		if(loginHash == null)
+		{
+			response.sendRedirect("index.jsp");
+			return;
+		}
 		Long id = DatabaseManager.getUserIdFromHash(loginHash);
+		if(id == null)
+		{
+			response.sendRedirect("index.jsp");
+			return;
+		}
 		// process file upload
 		System.out.println(UPLOAD_DIRECTORY);
 
