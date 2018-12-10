@@ -1,3 +1,4 @@
+package database;
 
 public enum CryptoErrors {
 	INVALID_SYMETRIC_KEY,
