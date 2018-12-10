@@ -127,6 +127,7 @@ $(document).ready(function()
 			$.post("./userSection", data).done(function (data){
 				$("#commentSection").empty();
 				var commentsData = JSON.parse(data);
+				console.log(commentsData);
 				$.each(commentsData, function(index,value){
 					var article = $("<article>");
 					article.append($("<h1>").text(value.creator));
@@ -228,9 +229,10 @@ $(document).ready(function()
 		        data :		 formData,
 		        success     : function(data, textStatus, jqXHR){
 		            // Callback code
+		        	console.log(data);
 		        	var article = $("<article>");
 					article.append($("<h1>").text(formData.get('creatorName')));
-					article.append($("<h2>").text(formData.get('createTime')));
+					article.append($("<h2>").text(data));
 					article.append($("<p>").text(formData.get('message')));
 					$("#commentSection").append(article);
 		        	$("#addCommentForm textarea").val('');

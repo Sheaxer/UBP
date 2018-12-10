@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
+<%@ page import="database.DatabaseManager" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,7 +12,9 @@
 <%
 // allow access only if session doesn't exists
 if(session.getAttribute("loginHash") != null) {
-	response.sendRedirect("users.jsp");
+	Long id = DatabaseManager.getUserIdFromHash((String) session.getAttribute("loginHash"));
+	if(id != null)
+		response.sendRedirect("users.jsp");
 }
 %>
 <br><br>
@@ -21,10 +24,9 @@ if(session.getAttribute("loginHash") != null) {
 <form action="Login" method="post">
 Username: <input type="text" class="form-control" name="username"><br>
 Password: <input type="password" class="form-control" name="password"><br>
-<input type="submit" value="login" class="btn btn-primary" />
-</form>
-<br>
+<input type="submit" class="btn btn-primary" value="login" />
 <a href="./register.jsp" class="btn btn-primary">register</a>
+</form>
 </div>
 </body>
 </html>

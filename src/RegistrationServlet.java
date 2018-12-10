@@ -27,6 +27,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import org.passay.dictionary.WordLists;
+
+import database.CryptoUtils;
+import database.DatabaseManager;
+import database.UserData;
+
 import org.passay.dictionary.WordListDictionary;
 import org.passay.RuleResult;
 
