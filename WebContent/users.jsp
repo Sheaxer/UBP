@@ -31,6 +31,7 @@ else {
 <br><br>
 <div class="container" style="background-color:rgb(229, 229, 255); border-radius:5px"><p><h1>Welcome <span id="myName"><%=user %></span></h1></p></div>
 <br>
+<div class="container" style="background-color:rgb(229, 229, 255); border-radius:5px">How to: Just click on the file you want comments for, file you want to decrypt and download or user you want to encrypt file for</div>
 <div class="container" style="background-color:rgb(229, 229, 255); border-radius:5px"><section id="userSection"></section></div>
 <br> <div class="container" style="background-color:rgb(229, 229, 255); border-radius:5px">  <section id="filesFromMe"></section> </div>
 <br> <div class="container" style="background-color:rgb(229, 229, 255); border-radius:5px">
